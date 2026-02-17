@@ -2104,1201 +2104,1202 @@
 
     <script>
         // ==========================================
-        // SUPABASE CONFIGURATION - GANTI DENGAN DATA ANDA
-        // ==========================================
-        const SUPABASE_URL = 'https://bidhhwcuhisuptgonyfd.supabase.co';
-        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UWhv8EzFD1xm0U_to2Z8dw_mt61Z09j';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZGhod2N1aGlzdXB0Z29ueWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTgxNDksImV4cCI6MjA4Njg3NDE0OX0.fb7FGMAEOHhyYpsTpzJ9ZGZpwQaA8INnHtq9NiHqCwU'
-        
-        // Initialize Supabase
-        let supabaseClient;
+// SUPABASE CONFIGURATION
+// ==========================================
+const SUPABASE_URL = 'https://bidhhwcuhisuptgonyfd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZGhod2N1aGlzdXB0Z29ueWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTgxNDksImV4cCI6MjA4Njg3NDE0OX0.fb7FGMAEOHhyYpsTpzJ9ZGZpwQaA8INnHtq9NiHqCwU';
+
+// Global Variables
+let currentUser = null;
+let currentSession = null;
+let tradesData = [];
+let projectsData = [];
+let currentEditId = null;
+let charts = {};
+let supabaseClient = null;
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Initialize Supabase client
+        const { createClient } = supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Global Variables
-        let currentUser = null;
-        let currentSession = null;
-        let tradesData = [];
-        let projectsData = [];
-        let currentEditId = null;
-        let charts = {};
-
-        // ==========================================
-        // INITIALIZATION
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Initialize Supabase client
-                const { createClient } = supabase;
-                supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Check existing session
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
-                
-                if (error) throw error;
-                
-                if (session) {
-                    currentSession = session;
-                    currentUser = session.user;
-                    await initializeDashboard();
-                } else {
-                    // Redirect ke halaman login (index.html atau login.html)
-                    window.location.href = 'index.html';
-                }
-                
-                // Listen for auth changes
-                supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        currentSession = session;
-                        currentUser = session.user;
-                        await initializeDashboard();
-                    } else if (event === 'SIGNED_OUT') {
-                        window.location.href = 'index.html';
-                    }
-                });
-                
-            } catch (error) {
-                console.error('Initialization error:', error);
-                showNotification('Error initializing app: ' + error.message, 'error');
+        // Check existing session
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        
+        if (error) throw error;
+        
+        if (session) {
+            currentSession = session;
+            currentUser = session.user;
+            await initializeDashboard();
+        } else {
+            window.location.href = 'index.html';
+        }
+        
+        // Listen for auth changes
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentSession = session;
+                currentUser = session.user;
+                await initializeDashboard();
+            } else if (event === 'SIGNED_OUT') {
                 window.location.href = 'index.html';
             }
-            
-            setupEventListeners();
         });
-
-        function setupEventListeners() {
-            // Close modals on outside click
-            document.getElementById('tradeModal').addEventListener('click', function(e) {
-                if (e.target === this) closeTradeModal();
-            });
-            
-            document.getElementById('projectModal').addEventListener('click', function(e) {
-                if (e.target === this) closeProjectModal();
-            });
-
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                filterTrades(searchTerm);
-            }, 300));
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('Error initializing app: ' + error.message, 'error');
+        // Hide loading screen on error
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
         }
+        window.location.href = 'index.html';
+    }
+    
+    setupEventListeners();
+});
 
-        // ==========================================
-        // DASHBOARD INITIALIZATION
-        // ==========================================
-        async function initializeDashboard() {
-            // Update UI with user data
-            updateUserUI(currentUser);
-            
-            // Load all data
-            await Promise.all([
-                loadTrades(),
-                loadProjects()
-            ]);
-            
-            // Render everything
-            updateStats();
-            renderCharts();
-            renderTradeTable();
-            renderProjects();
-            
-            // Setup real-time subscription for trades
-            setupRealtimeSubscription();
-            
-            // Hide loading screen
+function setupEventListeners() {
+    // Close modals on outside click
+    document.getElementById('tradeModal').addEventListener('click', function(e) {
+        if (e.target === this) closeTradeModal();
+    });
+    
+    document.getElementById('projectModal').addEventListener('click', function(e) {
+        if (e.target === this) closeProjectModal();
+    });
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        filterTrades(searchTerm);
+    }, 300));
+
+    // Navigation click handlers
+    document.querySelectorAll('.nav-links li').forEach(link => {
+        link.addEventListener('click', () => {
+            switchSection(link.dataset.section, link.dataset.content);
+        });
+    });
+}
+
+// ==========================================
+// DASHBOARD INITIALIZATION
+// ==========================================
+async function initializeDashboard() {
+    // Update UI with user data
+    updateUserUI(currentUser);
+    
+    // Load all data
+    await Promise.all([
+        loadTrades(),
+        loadProjects()
+    ]);
+    
+    // Render everything
+    updateStats();
+    renderCharts();
+    renderTradeTable();
+    renderProjects();
+    
+    // Setup real-time subscription for trades
+    setupRealtimeSubscription();
+    
+    // Hide loading screen
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
             setTimeout(() => {
-                const loadingScreen = document.getElementById('loading-screen');
-                if (loadingScreen) {
-                    loadingScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }
-            }, 1000);
+                loadingScreen.style.display = 'none';
+            }, 500);
         }
+    }, 1000);
+}
 
-        function updateUserUI(user) {
-            const email = user.email || 'trader@journal.com';
-            const name = user.user_metadata?.full_name || email.split('@')[0];
-            const initials = name.substring(0, 2).toUpperCase();
-            
-            document.getElementById('headerName').textContent = name;
-            document.getElementById('headerAvatar').textContent = initials;
-            document.getElementById('dropdownName').textContent = name;
-            document.getElementById('dropdownEmail').textContent = email;
-            document.getElementById('dropdownAvatar').textContent = initials;
-        }
+function updateUserUI(user) {
+    const email = user.email || 'trader@journal.com';
+    const name = user.user_metadata?.full_name || email.split('@')[0];
+    const initials = name.substring(0, 2).toUpperCase();
+    
+    document.getElementById('headerName').textContent = name;
+    document.getElementById('headerAvatar').textContent = initials;
+    document.getElementById('dropdownName').textContent = name;
+    document.getElementById('dropdownEmail').textContent = email;
+    document.getElementById('dropdownAvatar').textContent = initials;
+}
 
-        // ==========================================
-        // REAL-TIME SUBSCRIPTION
-        // ==========================================
-        function setupRealtimeSubscription() {
-            supabaseClient
-                .channel('trades_changes')
-                .on('postgres_changes', 
-                    { 
-                        event: '*', 
-                        schema: 'public', 
-                        table: 'trades',
-                        filter: `user_id=eq.${currentUser.id}`
-                    }, 
-                    (payload) => {
-                        console.log('Real-time update:', payload);
-                        handleRealtimeUpdate(payload);
-                    }
-                )
-                .subscribe();
-        }
-
-        function handleRealtimeUpdate(payload) {
-            const { eventType, new: newRecord, old: oldRecord } = payload;
-            
-            switch(eventType) {
-                case 'INSERT':
-                    tradesData.unshift(newRecord);
-                    break;
-                case 'UPDATE':
-                    const index = tradesData.findIndex(t => t.id === oldRecord.id);
-                    if (index !== -1) tradesData[index] = newRecord;
-                    break;
-                case 'DELETE':
-                    tradesData = tradesData.filter(t => t.id !== oldRecord.id);
-                    break;
+// ==========================================
+// REAL-TIME SUBSCRIPTION
+// ==========================================
+function setupRealtimeSubscription() {
+    supabaseClient
+        .channel('trades_changes')
+        .on('postgres_changes', 
+            { 
+                event: '*', 
+                schema: 'public', 
+                table: 'trades',
+                filter: `user_id=eq.${currentUser.id}`
+            }, 
+            (payload) => {
+                console.log('Real-time update:', payload);
+                handleRealtimeUpdate(payload);
             }
-            
-            // Refresh UI
-            updateStats();
-            renderCharts();
-            renderTradeTable();
-            showNotification('Data diperbarui secara real-time', 'info');
+        )
+        .subscribe();
+}
+
+function handleRealtimeUpdate(payload) {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+    
+    switch(eventType) {
+        case 'INSERT':
+            tradesData.unshift(newRecord);
+            break;
+        case 'UPDATE':
+            const index = tradesData.findIndex(t => t.id === oldRecord.id);
+            if (index !== -1) tradesData[index] = newRecord;
+            break;
+        case 'DELETE':
+            tradesData = tradesData.filter(t => t.id !== oldRecord.id);
+            break;
+    }
+    
+    // Refresh UI
+    updateStats();
+    renderCharts();
+    renderTradeTable();
+    showNotification('Data diperbarui secara real-time', 'info');
+}
+
+// ==========================================
+// DATA LOADING FROM SUPABASE
+// ==========================================
+async function loadTrades() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('trades')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('open_date', { ascending: false });
+
+        if (error) throw error;
+        
+        tradesData = data || [];
+        
+    } catch (error) {
+        console.error('Error loading trades:', error);
+        showNotification('Error memuat data trade: ' + error.message, 'error');
+        tradesData = [];
+    }
+}
+
+async function loadProjects() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        projectsData = data || [];
+        
+    } catch (error) {
+        console.error('Error loading projects:', error);
+        projectsData = [];
+    }
+}
+
+// ==========================================
+// STATISTICS
+// ==========================================
+function updateStats() {
+    const total = tradesData.length;
+    const wins = tradesData.filter(t => t.result === 'WIN').length;
+    const losses = tradesData.filter(t => t.result === 'LOSS').length;
+    
+    const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+    const totalPnL = tradesData.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+    
+    // Profit Factor
+    const grossProfit = tradesData
+        .filter(t => parseFloat(t.pnl) > 0)
+        .reduce((sum, t) => sum + parseFloat(t.pnl), 0);
+    const grossLoss = Math.abs(tradesData
+        .filter(t => parseFloat(t.pnl) < 0)
+        .reduce((sum, t) => sum + parseFloat(t.pnl), 0));
+    const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : 
+                        grossProfit > 0 ? '∞' : '-';
+
+    // Update DOM
+    document.getElementById('totalTrades').textContent = total;
+    document.getElementById('winRate').textContent = winRate + '%';
+    document.getElementById('totalPnL').textContent = formatCurrency(totalPnL);
+    document.getElementById('profitFactor').textContent = profitFactor;
+
+    // Trends
+    document.getElementById('totalTradesTrend').textContent = total + ' trades';
+    document.getElementById('winRateTrend').textContent = winRate >= 50 ? 'Good' : 'Improve';
+    document.getElementById('winRateTrend').className = 'trend ' + (winRate >= 50 ? 'positive' : 'negative');
+    document.getElementById('pnlTrend').textContent = (totalPnL >= 0 ? '+' : '') + formatCurrency(totalPnL);
+    document.getElementById('pnlTrend').className = 'trend ' + (totalPnL >= 0 ? 'positive' : 'negative');
+
+    // Analytics metrics
+    updateAnalyticsMetrics();
+}
+
+function updateAnalyticsMetrics() {
+    const winTrades = tradesData.filter(t => t.result === 'WIN' && parseFloat(t.pnl) > 0);
+    const lossTrades = tradesData.filter(t => t.result === 'LOSS' && parseFloat(t.pnl) < 0);
+    
+    const avgWin = winTrades.length > 0 
+        ? winTrades.reduce((sum, t) => sum + parseFloat(t.pnl), 0) / winTrades.length 
+        : 0;
+    const avgLoss = lossTrades.length > 0 
+        ? Math.abs(lossTrades.reduce((sum, t) => sum + parseFloat(t.pnl), 0) / lossTrades.length)
+        : 0;
+    
+    const winRate = tradesData.length > 0 ? (winTrades.length / tradesData.length) : 0;
+    const lossRate = tradesData.length > 0 ? (lossTrades.length / tradesData.length) : 0;
+    
+    const expectancy = (winRate * avgWin) - (lossRate * avgLoss);
+    
+    // Max Drawdown
+    let maxDrawdown = 0;
+    let peak = 0;
+    let runningPnL = 0;
+    
+    const sortedTrades = [...tradesData].sort((a, b) => 
+        new Date(a.open_date) - new Date(b.open_date)
+    );
+    
+    sortedTrades.forEach(trade => {
+        runningPnL += parseFloat(trade.pnl) || 0;
+        if (runningPnL > peak) peak = runningPnL;
+        const drawdown = peak - runningPnL;
+        if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    });
+
+    document.getElementById('avgWin').textContent = formatCurrency(avgWin);
+    document.getElementById('avgLoss').textContent = formatCurrency(avgLoss);
+    document.getElementById('expectancy').textContent = formatCurrency(expectancy);
+    document.getElementById('expectancy').className = 'counter ' + (expectancy >= 0 ? 'positive' : 'negative');
+    document.getElementById('maxDrawdown').textContent = formatCurrency(maxDrawdown);
+}
+
+// ==========================================
+// CHARTS
+// ==========================================
+function renderCharts() {
+    renderOverallStatsChart();
+    renderSymbolStats();
+    renderAnalyticsCharts();
+}
+
+function renderOverallStatsChart() {
+    const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    const tradesByDay = new Array(7).fill(0);
+    const pnlByDay = new Array(7).fill(0);
+    
+    tradesData.forEach(trade => {
+        const date = new Date(trade.open_date);
+        const dayIndex = date.getDay();
+        const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+        tradesByDay[adjustedIndex]++;
+        pnlByDay[adjustedIndex] += parseFloat(trade.pnl) || 0;
+    });
+
+    const options = {
+        series: [{
+            name: 'Trades',
+            type: 'column',
+            data: tradesByDay
+        }, {
+            name: 'P&L',
+            type: 'line',
+            data: pnlByDay
+        }],
+        chart: {
+            height: 350,
+            type: 'line',
+            background: 'transparent',
+            toolbar: { show: false }
+        },
+        stroke: { width: [0, 4] },
+        plotOptions: {
+            bar: { 
+                columnWidth: '50%',
+                borderRadius: 6
+            }
+        },
+        colors: ['#6d5acd', '#2ed573'],
+        dataLabels: { enabled: false },
+        xaxis: {
+            categories: days,
+            labels: { style: { colors: '#a0a3bd' } }
+        },
+        yaxis: [{
+            title: { text: 'Trades', style: { color: '#6d5acd' } },
+            labels: { style: { colors: '#a0a3bd' } }
+        }, {
+            opposite: true,
+            title: { text: 'P&L ($)', style: { color: '#2ed573' } },
+            labels: { 
+                style: { colors: '#a0a3bd' },
+                formatter: (val) => '$' + val.toFixed(0)
+            }
+        }],
+        grid: { borderColor: '#1a1d25' },
+        tooltip: {
+            y: { formatter: (val) => '$' + val.toFixed(2) }
         }
+    };
 
-        // ==========================================
-        // DATA LOADING FROM SUPABASE
-        // ==========================================
-        async function loadTrades() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('trades')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('open_date', { ascending: false });
+    if (charts.overall) charts.overall.destroy();
+    charts.overall = new ApexCharts(document.querySelector("#overallStatsChart"), options);
+    charts.overall.render();
+}
 
-                if (error) throw error;
-                
-                tradesData = data || [];
-                
-            } catch (error) {
-                console.error('Error loading trades:', error);
-                showNotification('Error memuat data trade: ' + error.message, 'error');
-                tradesData = [];
+function renderSymbolStats() {
+    const symbolCount = {};
+    const symbolPnL = {};
+    
+    tradesData.forEach(trade => {
+        const symbol = trade.symbol?.toUpperCase() || 'Unknown';
+        symbolCount[symbol] = (symbolCount[symbol] || 0) + 1;
+        symbolPnL[symbol] = (symbolPnL[symbol] || 0) + (parseFloat(trade.pnl) || 0);
+    });
+
+    const sortedSymbols = Object.entries(symbolCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    const maxCount = sortedSymbols.length > 0 ? sortedSymbols[0][1] : 1;
+    const container = document.getElementById('symbolStats');
+
+    if (sortedSymbols.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-chart-bar"></i>
+                <p>Belum ada data trading</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = sortedSymbols.map(([symbol, count], index) => `
+        <div class="symbol-item">
+            <div class="symbol-rank">${index + 1}</div>
+            <div class="symbol-info">
+                <div class="symbol-name">${symbol}</div>
+                <div class="symbol-count">${count} trades • ${formatCurrency(symbolPnL[symbol])}</div>
+            </div>
+            <div class="symbol-bar">
+                <div class="symbol-progress" style="width: ${(count / maxCount) * 100}%"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderAnalyticsCharts() {
+    // P&L Distribution
+    const pnlRanges = {
+        '>$500': 0,
+        '$200-$500': 0,
+        '$0-$200': 0,
+        '-$200-$0': 0,
+        '-$500-$200': 0,
+        '<-$500': 0
+    };
+    
+    tradesData.forEach(trade => {
+        const pnl = parseFloat(trade.pnl) || 0;
+        if (pnl > 500) pnlRanges['>$500']++;
+        else if (pnl > 200) pnlRanges['$200-$500']++;
+        else if (pnl > 0) pnlRanges['$0-$200']++;
+        else if (pnl > -200) pnlRanges['-$200-$0']++;
+        else if (pnl > -500) pnlRanges['-$500-$200']++;
+        else pnlRanges['<$500']++;
+    });
+
+    const pnlOptions = {
+        series: [{ data: Object.values(pnlRanges) }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent'
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 6,
+                distributed: true
+            }
+        },
+        colors: ['#2ed573', '#26de81', '#fed330', '#fd9644', '#fc5c65', '#ff4757'],
+        xaxis: {
+            categories: Object.keys(pnlRanges),
+            labels: { style: { colors: '#a0a3bd' } }
+        },
+        yaxis: {
+            labels: { style: { colors: '#a0a3bd' } }
+        }
+    };
+
+    if (charts.pnlDist) charts.pnlDist.destroy();
+    charts.pnlDist = new ApexCharts(document.querySelector("#pnlDistributionChart"), pnlOptions);
+    charts.pnlDist.render();
+
+    // Symbol Performance
+    const symbolPnL = {};
+    tradesData.forEach(trade => {
+        const symbol = trade.symbol?.toUpperCase() || 'Unknown';
+        symbolPnL[symbol] = (symbolPnL[symbol] || 0) + (parseFloat(trade.pnl) || 0);
+    });
+
+    const sortedSymbols = Object.entries(symbolPnL)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8);
+
+    const symbolOptions = {
+        series: [{ data: sortedSymbols.map(s => s[1]) }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent'
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 6,
+                horizontal: true,
+                colors: {
+                    ranges: [{
+                        from: -999999,
+                        to: 0,
+                        color: '#ff4757'
+                    }, {
+                        from: 0,
+                        to: 999999,
+                        color: '#2ed573'
+                    }]
+                }
+            }
+        },
+        xaxis: {
+            categories: sortedSymbols.map(s => s[0]),
+            labels: { 
+                style: { colors: '#a0a3bd' },
+                formatter: (val) => '$' + val.toFixed(0)
             }
         }
+    };
 
-        async function loadProjects() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('projects')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
+    if (charts.symbolPerf) charts.symbolPerf.destroy();
+    charts.symbolPerf = new ApexCharts(document.querySelector("#symbolPerformanceChart"), symbolOptions);
+    charts.symbolPerf.render();
 
-                if (error) throw error;
-                
-                projectsData = data || [];
-                
-            } catch (error) {
-                console.error('Error loading projects:', error);
-                projectsData = [];
+    // Day Performance
+    const dayStats = { 'Sen': {w:0, l:0}, 'Sel': {w:0, l:0}, 'Rab': {w:0, l:0}, 
+                      'Kam': {w:0, l:0}, 'Jum': {w:0, l:0}, 'Sab': {w:0, l:0}, 'Min': {w:0, l:0} };
+    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    
+    tradesData.forEach(trade => {
+        const date = new Date(trade.open_date);
+        const dayName = dayNames[date.getDay()];
+        if (trade.result === 'WIN') dayStats[dayName].w++;
+        else if (trade.result === 'LOSS') dayStats[dayName].l++;
+    });
+
+    const dayOptions = {
+        series: [{
+            name: 'Win',
+            data: Object.values(dayStats).map(d => d.w)
+        }, {
+            name: 'Loss',
+            data: Object.values(dayStats).map(d => d.l)
+        }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent',
+            stacked: true
+        },
+        colors: ['#2ed573', '#ff4757'],
+        xaxis: {
+            categories: Object.keys(dayStats),
+            labels: { style: { colors: '#a0a3bd' } }
+        }
+    };
+
+    if (charts.dayPerf) charts.dayPerf.destroy();
+    charts.dayPerf = new ApexCharts(document.querySelector("#dayPerformanceChart"), dayOptions);
+    charts.dayPerf.render();
+
+    // Risk:Reward Analysis
+    const rrStats = {};
+    tradesData.forEach(trade => {
+        const rr = trade.risk_reward || 'Unknown';
+        if (!rrStats[rr]) rrStats[rr] = { win: 0, loss: 0, total: 0 };
+        rrStats[rr].total++;
+        if (trade.result === 'WIN') rrStats[rr].win++;
+        else if (trade.result === 'LOSS') rrStats[rr].loss++;
+    });
+
+    const rrOptions = {
+        series: [{
+            name: 'Win Rate %',
+            data: Object.values(rrStats).map(s => (s.win / s.total * 100).toFixed(1))
+        }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent'
+        },
+        plotOptions: {
+            bar: { borderRadius: 6 }
+        },
+        colors: ['#6d5acd'],
+        xaxis: {
+            categories: Object.keys(rrStats),
+            labels: { style: { colors: '#a0a3bd' } }
+        },
+        yaxis: {
+            labels: { 
+                style: { colors: '#a0a3bd' },
+                formatter: (val) => val + '%'
             }
         }
+    };
 
-        // ==========================================
-        // STATISTICS
-        // ==========================================
-        function updateStats() {
-            const total = tradesData.length;
-            const wins = tradesData.filter(t => t.result === 'WIN').length;
-            const losses = tradesData.filter(t => t.result === 'LOSS').length;
-            
-            const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-            const totalPnL = tradesData.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
-            
-            // Profit Factor
-            const grossProfit = tradesData
-                .filter(t => parseFloat(t.pnl) > 0)
-                .reduce((sum, t) => sum + parseFloat(t.pnl), 0);
-            const grossLoss = Math.abs(tradesData
-                .filter(t => parseFloat(t.pnl) < 0)
-                .reduce((sum, t) => sum + parseFloat(t.pnl), 0));
-            const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : 
-                                grossProfit > 0 ? '∞' : '-';
+    if (charts.rr) charts.rr.destroy();
+    charts.rr = new ApexCharts(document.querySelector("#riskRewardChart"), rrOptions);
+    charts.rr.render();
 
-            // Update DOM
-            document.getElementById('totalTrades').textContent = total;
-            document.getElementById('winRate').textContent = winRate + '%';
-            document.getElementById('totalPnL').textContent = formatCurrency(totalPnL);
-            document.getElementById('profitFactor').textContent = profitFactor;
+    // Equity Curve
+    let runningPnL = 0;
+    const equityData = [];
+    const sortedTrades = [...tradesData].sort((a, b) => 
+        new Date(a.open_date) - new Date(b.open_date)
+    );
+    
+    sortedTrades.forEach((trade, index) => {
+        runningPnL += parseFloat(trade.pnl) || 0;
+        equityData.push({
+            x: index + 1,
+            y: runningPnL
+        });
+    });
 
-            // Trends
-            document.getElementById('totalTradesTrend').textContent = total + ' trades';
-            document.getElementById('winRateTrend').textContent = winRate >= 50 ? 'Good' : 'Improve';
-            document.getElementById('winRateTrend').className = 'trend ' + (winRate >= 50 ? 'positive' : 'negative');
-            document.getElementById('pnlTrend').textContent = (totalPnL >= 0 ? '+' : '') + formatCurrency(totalPnL);
-            document.getElementById('pnlTrend').className = 'trend ' + (totalPnL >= 0 ? 'positive' : 'negative');
-
-            // Analytics metrics
-            updateAnalyticsMetrics();
-        }
-
-        function updateAnalyticsMetrics() {
-            const winTrades = tradesData.filter(t => t.result === 'WIN' && parseFloat(t.pnl) > 0);
-            const lossTrades = tradesData.filter(t => t.result === 'LOSS' && parseFloat(t.pnl) < 0);
-            
-            const avgWin = winTrades.length > 0 
-                ? winTrades.reduce((sum, t) => sum + parseFloat(t.pnl), 0) / winTrades.length 
-                : 0;
-            const avgLoss = lossTrades.length > 0 
-                ? Math.abs(lossTrades.reduce((sum, t) => sum + parseFloat(t.pnl), 0) / lossTrades.length)
-                : 0;
-            
-            const winRate = tradesData.length > 0 ? (winTrades.length / tradesData.length) : 0;
-            const lossRate = tradesData.length > 0 ? (lossTrades.length / tradesData.length) : 0;
-            
-            const expectancy = (winRate * avgWin) - (lossRate * avgLoss);
-            
-            // Max Drawdown
-            let maxDrawdown = 0;
-            let peak = 0;
-            let runningPnL = 0;
-            
-            const sortedTrades = [...tradesData].sort((a, b) => 
-                new Date(a.open_date) - new Date(b.open_date)
-            );
-            
-            sortedTrades.forEach(trade => {
-                runningPnL += parseFloat(trade.pnl) || 0;
-                if (runningPnL > peak) peak = runningPnL;
-                const drawdown = peak - runningPnL;
-                if (drawdown > maxDrawdown) maxDrawdown = drawdown;
-            });
-
-            document.getElementById('avgWin').textContent = formatCurrency(avgWin);
-            document.getElementById('avgLoss').textContent = formatCurrency(avgLoss);
-            document.getElementById('expectancy').textContent = formatCurrency(expectancy);
-            document.getElementById('expectancy').className = 'counter ' + (expectancy >= 0 ? 'positive' : 'negative');
-            document.getElementById('maxDrawdown').textContent = formatCurrency(maxDrawdown);
-        }
-
-        // ==========================================
-        // CHARTS
-        // ==========================================
-        function renderCharts() {
-            renderOverallStatsChart();
-            renderSymbolStats();
-            renderAnalyticsCharts();
-        }
-
-        function renderOverallStatsChart() {
-            const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-            const tradesByDay = new Array(7).fill(0);
-            const pnlByDay = new Array(7).fill(0);
-            
-            tradesData.forEach(trade => {
-                const date = new Date(trade.open_date);
-                const dayIndex = date.getDay();
-                const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
-                tradesByDay[adjustedIndex]++;
-                pnlByDay[adjustedIndex] += parseFloat(trade.pnl) || 0;
-            });
-
-            const options = {
-                series: [{
-                    name: 'Trades',
-                    type: 'column',
-                    data: tradesByDay
-                }, {
-                    name: 'P&L',
-                    type: 'line',
-                    data: pnlByDay
-                }],
-                chart: {
-                    height: 350,
-                    type: 'line',
-                    background: 'transparent',
-                    toolbar: { show: false }
-                },
-                stroke: { width: [0, 4] },
-                plotOptions: {
-                    bar: { 
-                        columnWidth: '50%',
-                        borderRadius: 6
-                    }
-                },
-                colors: ['#6d5acd', '#2ed573'],
-                dataLabels: { enabled: false },
-                xaxis: {
-                    categories: days,
-                    labels: { style: { colors: '#a0a3bd' } }
-                },
-                yaxis: [{
-                    title: { text: 'Trades', style: { color: '#6d5acd' } },
-                    labels: { style: { colors: '#a0a3bd' } }
-                }, {
-                    opposite: true,
-                    title: { text: 'P&L ($)', style: { color: '#2ed573' } },
-                    labels: { 
-                        style: { colors: '#a0a3bd' },
-                        formatter: (val) => '$' + val.toFixed(0)
-                    }
-                }],
-                grid: { borderColor: '#1a1d25' },
-                tooltip: {
-                    y: { formatter: (val) => '$' + val.toFixed(2) }
-                }
-            };
-
-            if (charts.overall) charts.overall.destroy();
-            charts.overall = new ApexCharts(document.querySelector("#overallStatsChart"), options);
-            charts.overall.render();
-        }
-
-        function renderSymbolStats() {
-            const symbolCount = {};
-            const symbolPnL = {};
-            
-            tradesData.forEach(trade => {
-                const symbol = trade.symbol?.toUpperCase() || 'Unknown';
-                symbolCount[symbol] = (symbolCount[symbol] || 0) + 1;
-                symbolPnL[symbol] = (symbolPnL[symbol] || 0) + (parseFloat(trade.pnl) || 0);
-            });
-
-            const sortedSymbols = Object.entries(symbolCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-
-            const maxCount = sortedSymbols.length > 0 ? sortedSymbols[0][1] : 1;
-            const container = document.getElementById('symbolStats');
-
-            if (sortedSymbols.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-chart-bar"></i>
-                        <p>Belum ada data trading</p>
-                    </div>
-                `;
-                return;
+    const equityOptions = {
+        series: [{
+            name: 'Equity',
+            data: equityData.map(d => d.y)
+        }],
+        chart: {
+            type: 'area',
+            height: 300,
+            background: 'transparent'
+        },
+        colors: ['#6d5acd'],
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.2
             }
-
-            container.innerHTML = sortedSymbols.map(([symbol, count], index) => `
-                <div class="symbol-item">
-                    <div class="symbol-rank">${index + 1}</div>
-                    <div class="symbol-info">
-                        <div class="symbol-name">${symbol}</div>
-                        <div class="symbol-count">${count} trades • ${formatCurrency(symbolPnL[symbol])}</div>
-                    </div>
-                    <div class="symbol-bar">
-                        <div class="symbol-progress" style="width: ${(count / maxCount) * 100}%"></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderAnalyticsCharts() {
-            // P&L Distribution
-            const pnlRanges = {
-                '>$500': 0,
-                '$200-$500': 0,
-                '$0-$200': 0,
-                '-$200-$0': 0,
-                '-$500-$200': 0,
-                '<-$500': 0
-            };
-            
-            tradesData.forEach(trade => {
-                const pnl = parseFloat(trade.pnl) || 0;
-                if (pnl > 500) pnlRanges['>$500']++;
-                else if (pnl > 200) pnlRanges['$200-$500']++;
-                else if (pnl > 0) pnlRanges['$0-$200']++;
-                else if (pnl > -200) pnlRanges['-$200-$0']++;
-                else if (pnl > -500) pnlRanges['-$500-$200']++;
-                else pnlRanges['<$500']++;
-            });
-
-            const pnlOptions = {
-                series: [{ data: Object.values(pnlRanges) }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    background: 'transparent'
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 6,
-                        distributed: true
-                    }
-                },
-                colors: ['#2ed573', '#26de81', '#fed330', '#fd9644', '#fc5c65', '#ff4757'],
-                xaxis: {
-                    categories: Object.keys(pnlRanges),
-                    labels: { style: { colors: '#a0a3bd' } }
-                },
-                yaxis: {
-                    labels: { style: { colors: '#a0a3bd' } }
-                }
-            };
-
-            if (charts.pnlDist) charts.pnlDist.destroy();
-            charts.pnlDist = new ApexCharts(document.querySelector("#pnlDistributionChart"), pnlOptions);
-            charts.pnlDist.render();
-
-            // Symbol Performance
-            const symbolPnL = {};
-            tradesData.forEach(trade => {
-                const symbol = trade.symbol?.toUpperCase() || 'Unknown';
-                symbolPnL[symbol] = (symbolPnL[symbol] || 0) + (parseFloat(trade.pnl) || 0);
-            });
-
-            const sortedSymbols = Object.entries(symbolPnL)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 8);
-
-            const symbolOptions = {
-                series: [{ data: sortedSymbols.map(s => s[1]) }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    background: 'transparent'
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 6,
-                        horizontal: true,
-                        colors: {
-                            ranges: [{
-                                from: -999999,
-                                to: 0,
-                                color: '#ff4757'
-                            }, {
-                                from: 0,
-                                to: 999999,
-                                color: '#2ed573'
-                            }]
-                        }
-                    }
-                },
-                xaxis: {
-                    categories: sortedSymbols.map(s => s[0]),
-                    labels: { 
-                        style: { colors: '#a0a3bd' },
-                        formatter: (val) => '$' + val.toFixed(0)
-                    }
-                }
-            };
-
-            if (charts.symbolPerf) charts.symbolPerf.destroy();
-            charts.symbolPerf = new ApexCharts(document.querySelector("#symbolPerformanceChart"), symbolOptions);
-            charts.symbolPerf.render();
-
-            // Day Performance
-            const dayStats = { 'Sen': {w:0, l:0}, 'Sel': {w:0, l:0}, 'Rab': {w:0, l:0}, 
-                              'Kam': {w:0, l:0}, 'Jum': {w:0, l:0}, 'Sab': {w:0, l:0}, 'Min': {w:0, l:0} };
-            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-            
-            tradesData.forEach(trade => {
-                const date = new Date(trade.open_date);
-                const dayName = dayNames[date.getDay()];
-                if (trade.result === 'WIN') dayStats[dayName].w++;
-                else if (trade.result === 'LOSS') dayStats[dayName].l++;
-            });
-
-            const dayOptions = {
-                series: [{
-                    name: 'Win',
-                    data: Object.values(dayStats).map(d => d.w)
-                }, {
-                    name: 'Loss',
-                    data: Object.values(dayStats).map(d => d.l)
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    background: 'transparent',
-                    stacked: true
-                },
-                colors: ['#2ed573', '#ff4757'],
-                xaxis: {
-                    categories: Object.keys(dayStats),
-                    labels: { style: { colors: '#a0a3bd' } }
-                }
-            };
-
-            if (charts.dayPerf) charts.dayPerf.destroy();
-            charts.dayPerf = new ApexCharts(document.querySelector("#dayPerformanceChart"), dayOptions);
-            charts.dayPerf.render();
-
-            // Risk:Reward Analysis
-            const rrStats = {};
-            tradesData.forEach(trade => {
-                const rr = trade.risk_reward || 'Unknown';
-                if (!rrStats[rr]) rrStats[rr] = { win: 0, loss: 0, total: 0 };
-                rrStats[rr].total++;
-                if (trade.result === 'WIN') rrStats[rr].win++;
-                else if (trade.result === 'LOSS') rrStats[rr].loss++;
-            });
-
-            const rrOptions = {
-                series: [{
-                    name: 'Win Rate %',
-                    data: Object.values(rrStats).map(s => (s.win / s.total * 100).toFixed(1))
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    background: 'transparent'
-                },
-                plotOptions: {
-                    bar: { borderRadius: 6 }
-                },
-                colors: ['#6d5acd'],
-                xaxis: {
-                    categories: Object.keys(rrStats),
-                    labels: { style: { colors: '#a0a3bd' } }
-                },
-                yaxis: {
-                    labels: { 
-                        style: { colors: '#a0a3bd' },
-                        formatter: (val) => val + '%'
-                    }
-                }
-            };
-
-            if (charts.rr) charts.rr.destroy();
-            charts.rr = new ApexCharts(document.querySelector("#riskRewardChart"), rrOptions);
-            charts.rr.render();
-
-            // Equity Curve
-            let runningPnL = 0;
-            const equityData = [];
-            const sortedTrades = [...tradesData].sort((a, b) => 
-                new Date(a.open_date) - new Date(b.open_date)
-            );
-            
-            sortedTrades.forEach((trade, index) => {
-                runningPnL += parseFloat(trade.pnl) || 0;
-                equityData.push({
-                    x: index + 1,
-                    y: runningPnL
-                });
-            });
-
-            const equityOptions = {
-                series: [{
-                    name: 'Equity',
-                    data: equityData.map(d => d.y)
-                }],
-                chart: {
-                    type: 'area',
-                    height: 300,
-                    background: 'transparent'
-                },
-                colors: ['#6d5acd'],
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.7,
-                        opacityTo: 0.2
-                    }
-                },
-                stroke: { curve: 'smooth', width: 2 },
-                xaxis: {
-                    type: 'numeric',
-                    labels: { style: { colors: '#a0a3bd' } }
-                },
-                yaxis: {
-                    labels: { 
-                        style: { colors: '#a0a3bd' },
-                        formatter: (val) => '$' + val.toFixed(0)
-                    }
-                }
-            };
-
-            if (charts.equity) charts.equity.destroy();
-            charts.equity = new ApexCharts(document.querySelector("#equityCurveChart"), equityOptions);
-            charts.equity.render();
-
-            // Monthly Performance
-            const monthlyData = {};
-            tradesData.forEach(trade => {
-                const date = new Date(trade.open_date);
-                const monthKey = date.toLocaleString('default', { month: 'short' });
-                if (!monthlyData[monthKey]) monthlyData[monthKey] = 0;
-                monthlyData[monthKey] += parseFloat(trade.pnl) || 0;
-            });
-
-            const monthOptions = {
-                series: [{ data: Object.values(monthlyData) }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    background: 'transparent'
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 6,
-                        colors: {
-                            ranges: [{
-                                from: -999999,
-                                to: 0,
-                                color: '#ff4757'
-                            }, {
-                                from: 0,
-                                to: 999999,
-                                color: '#2ed573'
-                            }]
-                        }
-                    }
-                },
-                xaxis: {
-                    categories: Object.keys(monthlyData),
-                    labels: { style: { colors: '#a0a3bd' } }
-                },
-                yaxis: {
-                    labels: { 
-                        style: { colors: '#a0a3bd' },
-                        formatter: (val) => '$' + val.toFixed(0)
-                    }
-                }
-            };
-
-            if (charts.monthly) charts.monthly.destroy();
-            charts.monthly = new ApexCharts(document.querySelector("#monthlyPerformanceChart"), monthOptions);
-            charts.monthly.render();
-        }
-
-        function updateCharts() {
-            renderOverallStatsChart();
-        }
-
-        // ==========================================
-        // TRADE TABLE
-        // ==========================================
-        function renderTradeTable() {
-            const container = document.getElementById('tradeHistoryTable');
-            
-            if (tradesData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <h3>Belum ada trade history</h3>
-                        <p>Klik tombol "Tambah Trade" untuk memulai</p>
-                    </div>
-                `;
-                return;
+        },
+        stroke: { curve: 'smooth', width: 2 },
+        xaxis: {
+            type: 'numeric',
+            labels: { style: { colors: '#a0a3bd' } }
+        },
+        yaxis: {
+            labels: { 
+                style: { colors: '#a0a3bd' },
+                formatter: (val) => '$' + val.toFixed(0)
             }
-
-            const html = `
-                <table class="trade-table">
-                    <thead>
-                        <tr>
-                            <th>Result</th>
-                            <th>Symbol</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Side</th>
-                            <th>TF</th>
-                            <th>R:R</th>
-                            <th>P&L</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tradesData.slice(0, 10).map(trade => `
-                            <tr>
-                                <td>
-                                    <span class="badge-result badge-${trade.result?.toLowerCase()}">
-                                        ${trade.result || '-'}
-                                    </span>
-                                </td>
-                                <td><strong>${trade.symbol}</strong></td>
-                                <td>${formatDate(trade.open_date)}</td>
-                                <td>${trade.type || '-'}</td>
-                                <td>
-                                    <span class="badge-side badge-${trade.side || 'buy'}">
-                                        ${trade.side ? trade.side.toUpperCase() : '-'}
-                                    </span>
-                                </td>
-                                <td>${trade.time_frame || '-'}</td>
-                                <td>${trade.risk_reward || '-'}</td>
-                                <td class="${trade.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">
-                                    ${formatCurrency(trade.pnl)}
-                                </td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn-action btn-edit" onclick="editTrade('${trade.id}')" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-action btn-delete" onclick="deleteTrade('${trade.id}')" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            container.innerHTML = html;
         }
+    };
 
-        function filterTrades(searchTerm) {
-            const filtered = tradesData.filter(trade => 
-                trade.symbol?.toLowerCase().includes(searchTerm) ||
-                trade.type?.toLowerCase().includes(searchTerm) ||
-                trade.result?.toLowerCase().includes(searchTerm)
-            );
-            
-            // Re-render with filtered data
-            const container = document.getElementById('tradeHistoryTable');
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <p>Tidak ada trade yang cocok</p>
-                    </div>
-                `;
-                return;
+    if (charts.equity) charts.equity.destroy();
+    charts.equity = new ApexCharts(document.querySelector("#equityCurveChart"), equityOptions);
+    charts.equity.render();
+
+    // Monthly Performance
+    const monthlyData = {};
+    tradesData.forEach(trade => {
+        const date = new Date(trade.open_date);
+        const monthKey = date.toLocaleString('default', { month: 'short' });
+        if (!monthlyData[monthKey]) monthlyData[monthKey] = 0;
+        monthlyData[monthKey] += parseFloat(trade.pnl) || 0;
+    });
+
+    const monthOptions = {
+        series: [{ data: Object.values(monthlyData) }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent'
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 6,
+                colors: {
+                    ranges: [{
+                        from: -999999,
+                        to: 0,
+                        color: '#ff4757'
+                    }, {
+                        from: 0,
+                        to: 999999,
+                        color: '#2ed573'
+                    }]
+                }
             }
-            
-            // Render filtered table (simplified - in production, modify renderTradeTable to accept data param)
-            renderTradeTable(); 
+        },
+        xaxis: {
+            categories: Object.keys(monthlyData),
+            labels: { style: { colors: '#a0a3bd' } }
+        },
+        yaxis: {
+            labels: { 
+                style: { colors: '#a0a3bd' },
+                formatter: (val) => '$' + val.toFixed(0)
+            }
         }
+    };
 
-        // ==========================================
-        // PROJECTS
-        // ==========================================
-        function renderProjects() {
-            const container = document.getElementById('projectsGrid');
-            
-            if (projectsData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <i class="fas fa-bullseye"></i>
-                        <h3>Belum ada target</h3>
-                        <p>Tambahkan target trading Anda</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = projectsData.map(project => `
-                <div class="project-card">
-                    <div class="project-header">
-                        <h3>${project.title}</h3>
-                        <span class="status ${project.status}">${project.status.toUpperCase()}</span>
-                    </div>
-                    <p class="project-description">${project.description}</p>
-                    <div class="project-targets">
-                        ${(project.targets || []).map((target, idx) => `
-                            <div class="target-item" onclick="toggleTarget('${project.id}', ${idx})">
-                                <div class="target-checkbox ${target.completed ? 'checked' : ''}">
-                                    ${target.completed ? '<i class="fas fa-check" style="font-size: 0.7rem;"></i>' : ''}
-                                </div>
-                                <span class="target-text ${target.completed ? 'completed' : ''}">${target.text}</span>
+    if (charts.monthly) charts.monthly.destroy();
+    charts.monthly = new ApexCharts(document.querySelector("#monthlyPerformanceChart"), monthOptions);
+    charts.monthly.render();
+}
+
+function updateCharts() {
+    renderOverallStatsChart();
+}
+
+// ==========================================
+// TRADE TABLE
+// ==========================================
+function renderTradeTable() {
+    const container = document.getElementById('tradeHistoryTable');
+    
+    if (tradesData.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h3>Belum ada trade history</h3>
+                <p>Klik tombol "Tambah Trade" untuk memulai</p>
+            </div>
+        `;
+        return;
+    }
+
+    const html = `
+        <table class="trade-table">
+            <thead>
+                <tr>
+                    <th>Result</th>
+                    <th>Symbol</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Side</th>
+                    <th>TF</th>
+                    <th>R:R</th>
+                    <th>P&L</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tradesData.slice(0, 10).map(trade => `
+                    <tr>
+                        <td>
+                            <span class="badge-result badge-${trade.result?.toLowerCase()}">
+                                ${trade.result || '-'}
+                            </span>
+                        </td>
+                        <td><strong>${trade.symbol}</strong></td>
+                        <td>${formatDate(trade.open_date)}</td>
+                        <td>${trade.type || '-'}</td>
+                        <td>
+                            <span class="badge-side badge-${trade.side || 'buy'}">
+                                ${trade.side ? trade.side.toUpperCase() : '-'}
+                            </span>
+                        </td>
+                        <td>${trade.time_frame || '-'}</td>
+                        <td>${trade.risk_reward || '-'}</td>
+                        <td class="${trade.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                            ${formatCurrency(trade.pnl)}
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-action btn-edit" onclick="editTrade('${trade.id}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteTrade('${trade.id}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div class="project-meta">
-                        <div class="project-progress">
-                            <div class="progress-bar">
-                                <div class="progress" style="width: ${project.progress}%"></div>
-                            </div>
-                            <span>${project.progress}%</span>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function filterTrades(searchTerm) {
+    const filtered = tradesData.filter(trade => 
+        trade.symbol?.toLowerCase().includes(searchTerm) ||
+        trade.type?.toLowerCase().includes(searchTerm) ||
+        trade.result?.toLowerCase().includes(searchTerm)
+    );
+    
+    // Re-render with filtered data
+    const container = document.getElementById('tradeHistoryTable');
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <p>Tidak ada trade yang cocok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Render filtered table (simplified - in production, modify renderTradeTable to accept data param)
+    renderTradeTable(); 
+}
+
+// ==========================================
+// PROJECTS
+// ==========================================
+function renderProjects() {
+    const container = document.getElementById('projectsGrid');
+    
+    if (projectsData.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <i class="fas fa-bullseye"></i>
+                <h3>Belum ada target</h3>
+                <p>Tambahkan target trading Anda</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = projectsData.map(project => `
+        <div class="project-card">
+            <div class="project-header">
+                <h3>${project.title}</h3>
+                <span class="status ${project.status}">${project.status.toUpperCase()}</span>
+            </div>
+            <p class="project-description">${project.description}</p>
+            <div class="project-targets">
+                ${(project.targets || []).map((target, idx) => `
+                    <div class="target-item" onclick="toggleTarget('${project.id}', ${idx})">
+                        <div class="target-checkbox ${target.completed ? 'checked' : ''}">
+                            ${target.completed ? '<i class="fas fa-check" style="font-size: 0.7rem;"></i>' : ''}
                         </div>
-                        <button class="btn-action btn-delete" onclick="deleteProject('${project.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <span class="target-text ${target.completed ? 'completed' : ''}">${target.text}</span>
                     </div>
+                `).join('')}
+            </div>
+            <div class="project-meta">
+                <div class="project-progress">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: ${project.progress}%"></div>
+                    </div>
+                    <span>${project.progress}%</span>
                 </div>
-            `).join('');
-        }
+                <button class="btn-action btn-delete" onclick="deleteProject('${project.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
 
-        async function toggleTarget(projectId, targetIdx) {
-            const project = projectsData.find(p => p.id === projectId);
-            if (!project || !project.targets) return;
+async function toggleTarget(projectId, targetIdx) {
+    const project = projectsData.find(p => p.id === projectId);
+    if (!project || !project.targets) return;
+    
+    project.targets[targetIdx].completed = !project.targets[targetIdx].completed;
+    const completedCount = project.targets.filter(t => t.completed).length;
+    project.progress = Math.round((completedCount / project.targets.length) * 100);
+    
+    // Update in database
+    try {
+        const { error } = await supabaseClient
+            .from('projects')
+            .update({ 
+                targets: project.targets,
+                progress: project.progress 
+            })
+            .eq('id', projectId);
             
-            project.targets[targetIdx].completed = !project.targets[targetIdx].completed;
-            const completedCount = project.targets.filter(t => t.completed).length;
-            project.progress = Math.round((completedCount / project.targets.length) * 100);
-            
-            // Update in database
-            try {
-                const { error } = await supabaseClient
-                    .from('projects')
-                    .update({ 
-                        targets: project.targets,
-                        progress: project.progress 
-                    })
-                    .eq('id', projectId);
-                    
-                if (error) throw error;
-                renderProjects();
-            } catch (error) {
-                showNotification('Error updating target: ' + error.message, 'error');
-            }
-        }
+        if (error) throw error;
+        renderProjects();
+    } catch (error) {
+        showNotification('Error updating target: ' + error.message, 'error');
+    }
+}
 
-        function openProjectModal() {
-            document.getElementById('projectModal').classList.add('active');
-            document.getElementById('projectForm').reset();
-            document.getElementById('targetsContainer').innerHTML = `
-                <input type="text" class="target-input" placeholder="Target 1" style="margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-            `;
-        }
+function openProjectModal() {
+    document.getElementById('projectModal').classList.add('active');
+    document.getElementById('projectForm').reset();
+    document.getElementById('targetsContainer').innerHTML = `
+        <input type="text" class="target-input" placeholder="Target 1" style="margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+    `;
+}
 
-        function closeProjectModal() {
-            document.getElementById('projectModal').classList.remove('active');
-        }
+function closeProjectModal() {
+    document.getElementById('projectModal').classList.remove('active');
+}
 
-        function addTargetInput() {
-            const container = document.getElementById('targetsContainer');
-            const count = container.children.length + 1;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'target-input';
-            input.placeholder = `Target ${count}`;
-            input.style.cssText = 'margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);';
-            container.appendChild(input);
-        }
+function addTargetInput() {
+    const container = document.getElementById('targetsContainer');
+    const count = container.children.length + 1;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'target-input';
+    input.placeholder = `Target ${count}`;
+    input.style.cssText = 'margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);';
+    container.appendChild(input);
+}
 
-        async function saveProject(event) {
-            event.preventDefault();
+async function saveProject(event) {
+    event.preventDefault();
+    
+    const title = document.getElementById('projectTitle').value;
+    const description = document.getElementById('projectDescription').value;
+    const targetInputs = document.querySelectorAll('.target-input');
+    const targets = Array.from(targetInputs)
+        .map(input => ({ text: input.value, completed: false }))
+        .filter(t => t.text.trim() !== '');
+    
+    const newProject = {
+        user_id: currentUser.id,
+        title,
+        description,
+        status: 'active',
+        targets: targets.length > 0 ? targets : [{ text: 'Complete project', completed: false }],
+        progress: 0
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .insert([newProject])
+            .select();
             
-            const title = document.getElementById('projectTitle').value;
-            const description = document.getElementById('projectDescription').value;
-            const targetInputs = document.querySelectorAll('.target-input');
-            const targets = Array.from(targetInputs)
-                .map(input => ({ text: input.value, completed: false }))
-                .filter(t => t.text.trim() !== '');
+        if (error) throw error;
+        
+        projectsData.unshift(data[0]);
+        renderProjects();
+        closeProjectModal();
+        showNotification('Target berhasil ditambahkan!', 'success');
+        
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
+
+async function deleteProject(id) {
+    if (!confirm('Hapus target ini?')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('projects')
+            .delete()
+            .eq('id', id);
             
-            const newProject = {
-                user_id: currentUser.id,
-                title,
-                description,
-                status: 'active',
-                targets: targets.length > 0 ? targets : [{ text: 'Complete project', completed: false }],
-                progress: 0
-            };
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('projects')
-                    .insert([newProject])
-                    .select();
-                    
-                if (error) throw error;
+        if (error) throw error;
+        
+        projectsData = projectsData.filter(p => p.id !== id);
+        renderProjects();
+        showNotification('Target dihapus', 'success');
+        
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
+
+// ==========================================
+// TRADE MODAL & CRUD
+// ==========================================
+function openTradeModal(isEdit = false) {
+    document.getElementById('tradeModal').classList.add('active');
+    document.getElementById('modalTitle').textContent = isEdit ? 'Edit Trade' : 'Tambah Trade Baru';
+    
+    if (!isEdit) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('open_date').value = now.toISOString().slice(0, 16);
+    }
+}
+
+function closeTradeModal() {
+    document.getElementById('tradeModal').classList.remove('active');
+    document.getElementById('tradeForm').reset();
+    currentEditId = null;
+}
+
+async function saveTrade(event) {
+    event.preventDefault();
+    
+    const btn = document.getElementById('saveTradeBtn');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
+    btn.disabled = true;
+    
+    const formData = new FormData(event.target);
+    const tradeData = {
+        user_id: currentUser.id,
+        result: formData.get('result'),
+        symbol: formData.get('symbol').toUpperCase(),
+        open_date: formData.get('open_date'),
+        type: formData.get('type'),
+        side: formData.get('side'),
+        time_frame: formData.get('time_frame') || null,
+        risk_reward: formData.get('risk_reward') || null,
+        pnl: parseFloat(formData.get('pnl')) || 0,
+        image_before: formData.get('image_before') || null,
+        image_after: formData.get('image_after') || null,
+        note: formData.get('note') || null
+    };
+
+    try {
+        if (currentEditId) {
+            // Update existing
+            const { data, error } = await supabaseClient
+                .from('trades')
+                .update(tradeData)
+                .eq('id', currentEditId)
+                .select();
                 
-                projectsData.unshift(data[0]);
-                renderProjects();
-                closeProjectModal();
-                showNotification('Target berhasil ditambahkan!', 'success');
+            if (error) throw error;
+            
+            const index = tradesData.findIndex(t => t.id === currentEditId);
+            if (index !== -1) tradesData[index] = data[0];
+            
+            showNotification('Trade berhasil diupdate!', 'success');
+        } else {
+            // Add new
+            const { data, error } = await supabaseClient
+                .from('trades')
+                .insert([tradeData])
+                .select();
                 
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteProject(id) {
-            if (!confirm('Hapus target ini?')) return;
+            if (error) throw error;
             
-            try {
-                const { error } = await supabaseClient
-                    .from('projects')
-                    .delete()
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                projectsData = projectsData.filter(p => p.id !== id);
-                renderProjects();
-                showNotification('Target dihapus', 'success');
-                
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
+            tradesData.unshift(data[0]);
+            showNotification('Trade berhasil ditambahkan!', 'success');
         }
 
-        // ==========================================
-        // TRADE MODAL & CRUD
-        // ==========================================
-        function openTradeModal(isEdit = false) {
-            document.getElementById('tradeModal').classList.add('active');
-            document.getElementById('modalTitle').textContent = isEdit ? 'Edit Trade' : 'Tambah Trade Baru';
+        closeTradeModal();
+        updateStats();
+        renderCharts();
+        renderTradeTable();
+        
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+}
+
+async function editTrade(id) {
+    const trade = tradesData.find(t => t.id === id);
+    if (!trade) return;
+
+    currentEditId = id;
+    
+    document.getElementById('result').value = trade.result || '';
+    document.getElementById('symbol').value = trade.symbol || '';
+    document.getElementById('open_date').value = trade.open_date ? trade.open_date.slice(0, 16) : '';
+    document.getElementById('type').value = trade.type || '';
+    document.getElementById('side').value = trade.side || '';
+    document.getElementById('time_frame').value = trade.time_frame || '';
+    document.getElementById('risk_reward').value = trade.risk_reward || '';
+    document.getElementById('pnl').value = trade.pnl || '';
+    document.getElementById('image_before').value = trade.image_before || '';
+    document.getElementById('image_after').value = trade.image_after || '';
+    document.getElementById('note').value = trade.note || '';
+
+    openTradeModal(true);
+}
+
+async function deleteTrade(id) {
+    if (!confirm('Hapus trade ini?')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('trades')
+            .delete()
+            .eq('id', id);
             
-            if (!isEdit) {
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                document.getElementById('open_date').value = now.toISOString().slice(0, 16);
-            }
+        if (error) throw error;
+        
+        tradesData = tradesData.filter(t => t.id !== id);
+        updateStats();
+        renderCharts();
+        renderTradeTable();
+        showNotification('Trade dihapus', 'success');
+        
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
+
+// ==========================================
+// NAVIGATION & UI
+// ==========================================
+function switchSection(section, contentId) {
+    document.querySelectorAll('.content-section').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(contentId).classList.add('active');
+    
+    document.querySelectorAll('.nav-links li').forEach(li => {
+        li.classList.remove('active');
+        if (li.dataset.section === section) {
+            li.classList.add('active');
         }
+    });
 
-        function closeTradeModal() {
-            document.getElementById('tradeModal').classList.remove('active');
-            document.getElementById('tradeForm').reset();
-            currentEditId = null;
-        }
+    // Close dropdowns
+    document.getElementById('profileDropdown').classList.remove('active');
+    document.getElementById('notifDropdown').classList.remove('active');
+}
 
-        async function saveTrade(event) {
-            event.preventDefault();
-            
-            const btn = document.getElementById('saveTradeBtn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
-            btn.disabled = true;
-            
-            const formData = new FormData(event.target);
-            const tradeData = {
-                user_id: currentUser.id,
-                result: formData.get('result'),
-                symbol: formData.get('symbol').toUpperCase(),
-                open_date: formData.get('open_date'),
-                type: formData.get('type'),
-                side: formData.get('side'),
-                time_frame: formData.get('time_frame') || null,
-                risk_reward: formData.get('risk_reward') || null,
-                pnl: parseFloat(formData.get('pnl')) || 0,
-                image_before: formData.get('image_before') || null,
-                image_after: formData.get('image_after') || null,
-                note: formData.get('note') || null
-            };
+function toggleProfile() {
+    document.getElementById('profileDropdown').classList.toggle('active');
+    document.getElementById('notifDropdown').classList.remove('active');
+}
 
-            try {
-                if (currentEditId) {
-                    // Update existing
-                    const { data, error } = await supabaseClient
-                        .from('trades')
-                        .update(tradeData)
-                        .eq('id', currentEditId)
-                        .select();
-                        
-                    if (error) throw error;
-                    
-                    const index = tradesData.findIndex(t => t.id === currentEditId);
-                    if (index !== -1) tradesData[index] = data[0];
-                    
-                    showNotification('Trade berhasil diupdate!', 'success');
-                } else {
-                    // Add new
-                    const { data, error } = await supabaseClient
-                        .from('trades')
-                        .insert([tradeData])
-                        .select();
-                        
-                    if (error) throw error;
-                    
-                    tradesData.unshift(data[0]);
-                    showNotification('Trade berhasil ditambahkan!', 'success');
-                }
+function toggleNotifications() {
+    document.getElementById('notifDropdown').classList.toggle('active');
+    document.getElementById('profileDropdown').classList.remove('active');
+}
 
-                closeTradeModal();
-                updateStats();
-                renderCharts();
-                renderTradeTable();
-                
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            } finally {
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
-            }
-        }
+function markAllRead() {
+    document.getElementById('notifBadge').textContent = '0';
+    document.getElementById('notifBadge').style.display = 'none';
+    showNotification('Semua notifikasi telah dibaca', 'success');
+}
 
-        async function editTrade(id) {
-            const trade = tradesData.find(t => t.id === id);
-            if (!trade) return;
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark-theme');
+    
+    if (isDark) {
+        html.classList.replace('dark-theme', 'light-theme');
+    } else {
+        html.classList.replace('light-theme', 'dark-theme');
+    }
+    
+    // Update charts theme
+    updateChartsTheme();
+}
 
-            currentEditId = id;
-            
-            document.getElementById('result').value = trade.result || '';
-            document.getElementById('symbol').value = trade.symbol || '';
-            document.getElementById('open_date').value = trade.open_date ? trade.open_date.slice(0, 16) : '';
-            document.getElementById('type').value = trade.type || '';
-            document.getElementById('side').value = trade.side || '';
-            document.getElementById('time_frame').value = trade.time_frame || '';
-            document.getElementById('risk_reward').value = trade.risk_reward || '';
-            document.getElementById('pnl').value = trade.pnl || '';
-            document.getElementById('image_before').value = trade.image_before || '';
-            document.getElementById('image_after').value = trade.image_after || '';
-            document.getElementById('note').value = trade.note || '';
-
-            openTradeModal(true);
-        }
-
-        async function deleteTrade(id) {
-            if (!confirm('Hapus trade ini?')) return;
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('trades')
-                    .delete()
-                    .eq('id', id);
-                    
-                if (error) throw error;
-                
-                tradesData = tradesData.filter(t => t.id !== id);
-                updateStats();
-                renderCharts();
-                renderTradeTable();
-                showNotification('Trade dihapus', 'success');
-                
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        // ==========================================
-        // NAVIGATION & UI
-        // ==========================================
-        function switchSection(section, contentId) {
-            document.querySelectorAll('.content-section').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(contentId).classList.add('active');
-            
-            document.querySelectorAll('.nav-links li').forEach(li => {
-                li.classList.remove('active');
-                if (li.dataset.section === section) {
-                    li.classList.add('active');
-                }
-            });
-
-            // Close dropdowns
-            document.getElementById('profileDropdown').classList.remove('active');
-            document.getElementById('notifDropdown').classList.remove('active');
-        }
-
-        // Navigation click handlers
-        document.querySelectorAll('.nav-links li').forEach(link => {
-            link.addEventListener('click', () => {
-                switchSection(link.dataset.section, link.dataset.content);
-            });
-        });
-
-        function toggleProfile() {
-            document.getElementById('profileDropdown').classList.toggle('active');
-            document.getElementById('notifDropdown').classList.remove('active');
-        }
-
-        function toggleNotifications() {
-            document.getElementById('notifDropdown').classList.toggle('active');
-            document.getElementById('profileDropdown').classList.remove('active');
-        }
-
-        function markAllRead() {
-            document.getElementById('notifBadge').textContent = '0';
-            document.getElementById('notifBadge').style.display = 'none';
-            showNotification('Semua notifikasi telah dibaca', 'success');
-        }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark-theme');
-            
-            if (isDark) {
-                html.classList.replace('dark-theme', 'light-theme');
-            } else {
-                html.classList.replace('light-theme', 'dark-theme');
-            }
-            
-            // Update charts theme
-            updateChartsTheme();
-        }
-
-        function updateChartsTheme() {
-            const isDark = document.documentElement.classList.contains('dark-theme');
-            const theme = isDark ? 'dark' : 'light';
-            
-            Object.values(charts).forEach(chart => {
-                if (chart) {
-                    chart.updateOptions({
-                        theme: { mode: theme },
-                        chart: {
-                            background: 'transparent'
-                        }
-                    });
+function updateChartsTheme() {
+    const isDark = document.documentElement.classList.contains('dark-theme');
+    const theme = isDark ? 'dark' : 'light';
+    
+    Object.values(charts).forEach(chart => {
+        if (chart) {
+            chart.updateOptions({
+                theme: { mode: theme },
+                chart: {
+                    background: 'transparent'
                 }
             });
         }
+    });
+}
 
-        // ==========================================
-        // UTILITIES
-        // ==========================================
-        function formatCurrency(value) {
-            if (value === null || value === undefined) return '-';
-            const num = parseFloat(value);
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(num);
-        }
+// ==========================================
+// UTILITIES
+// ==========================================
+function formatCurrency(value) {
+    if (value === null || value === undefined) return '-';
+    const num = parseFloat(value);
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(num);
+}
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+}
 
-        function showNotification(message, type = 'success') {
-            const container = document.getElementById('notification-container');
-            const notification = document.createElement('div');
-            notification.className = `custom-notification ${type}`;
-            
-            const icon = type === 'success' ? 'check-circle' : 
-                        type === 'error' ? 'times-circle' : 'info-circle';
-            
-            notification.innerHTML = `
-                <i class="fas fa-${icon}"></i>
-                <div class="notification-content">
-                    <p>${message}</p>
-                </div>
-            `;
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    
+    const icon = type === 'success' ? 'check-circle' : 
+                type === 'error' ? 'times-circle' : 'info-circle';
+    
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <div class="notification-content">
+            <p>${message}</p>
+        </div>
+    `;
 
-            container.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease forwards';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.notifications')) {
-                document.getElementById('notifDropdown').classList.remove('active');
-            }
-            if (!e.target.closest('.profile')) {
-                document.getElementById('profileDropdown').classList.remove('active');
-            }
-        });
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.notifications')) {
+        document.getElementById('notifDropdown').classList.remove('active');
+    }
+    if (!e.target.closest('.profile')) {
+        document.getElementById('profileDropdown').classList.remove('active');
+    }
+});
     </script>
 </body>
+
 </html>
