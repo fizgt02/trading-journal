@@ -2307,16 +2307,36 @@ function handleRealtimeUpdate(payload) {
     
     switch(eventType) {
         case 'INSERT':
-            tradesData.unshift(newRecord);
+            // ✅ CEGAH DUPLIKAT: Cek apakah data sudah ada
+            const existingIndex = tradesData.findIndex(t => t.id === newRecord.id);
+            if (existingIndex === -1) {
+                // Data belum ada, tambahkan
+                tradesData.unshift(newRecord);
+            } else {
+                // Data sudah ada, update saja (jaga-jaga)
+                tradesData[existingIndex] = newRecord;
+            }
             break;
+            
         case 'UPDATE':
             const index = tradesData.findIndex(t => t.id === oldRecord.id);
             if (index !== -1) tradesData[index] = newRecord;
             break;
+            
         case 'DELETE':
             tradesData = tradesData.filter(t => t.id !== oldRecord.id);
             break;
     }
+    
+    updateStats();
+    renderCharts();
+    renderTradeTable();
+    
+    // Hanya tampilkan notifikasi jika data benar-benar baru dari real-time (bukan dari submit sendiri)
+    if (eventType === 'INSERT' && newRecord.user_id !== currentUser.id) {
+        showNotification('Data baru dari real-time', 'info');
+    }
+}
     
     updateStats();
     renderCharts();
@@ -3408,3 +3428,4 @@ async function logout() {
 </body>
 
 </html>
+
