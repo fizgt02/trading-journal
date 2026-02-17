@@ -1435,17 +1435,17 @@
             <!-- Header -->
             <header>
                 <div class="header-left">
-                    <div class="app-switcher">
-                        <span>Trading</span>
-                        <div class="switch-btn budget" onclick="switchApp()"></div>
-                        <span class="active">Budget</span>
-                    </div>
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" placeholder="Cari transaksi...">
                     </div>
                 </div>
                 <div class="header-right">
+                     <div class="app-switcher">
+                        <span>Trading</span>
+                        <div class="switch-btn budget" onclick="switchApp()"></div>
+                        <span class="active">Budget</span>
+                    </div>
                     <div class="profile">
                         <div class="profile-trigger" onclick="toggleProfile()">
                             <div class="profile-avatar" id="headerAvatar">BM</div>
@@ -1973,7 +1973,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZGhod2N1aGlzdXB0Z29ueWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTgxNDksImV4cCI6MjA4Njg3NDE0OX0.fb7FGMAEOHhyYpsTpzJ9ZGZpwQaA8INnHtq9NiHqCwU';
         
         // Exchange Rate
-        const EXCHANGE_RATE = 16800; // 1 USD = 16,800 IDR
+        const EXCHANGE_RATE = 16827; 
 
         // Global Variables
         let currentUser = null;
@@ -2413,10 +2413,16 @@
             charts.accounts.render();
         }
 
-        function updateTotalBalance() {
-            const total = accounts.reduce((sum, acc) => sum + convertToIDR(acc.balance, acc.currency), 0);
-            document.getElementById('totalBalance').textContent = formatCurrency(total, currentCurrency);
+       function updateTotalBalance() {
+            const total = accounts.reduce((sum, acc) => {
+            if (currentCurrency === 'IDR') {
+            return sum + convertToIDR(acc.balance, acc.currency);
+        } else {
+            return sum + convertToUSD(acc.balance, acc.currency);
         }
+    }, 0);
+    document.getElementById('totalBalance').textContent = formatCurrency(total, currentCurrency);
+}
 
         function updateAccountSelects() {
             const selects = ['transactionAccount', 'transferFrom', 'transferTo', 'goalActionAccount'];
@@ -2441,9 +2447,9 @@
         function setCurrency(curr) {
             currentCurrency = curr;
             document.querySelectorAll('.currency-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === curr);
+            btn.classList.toggle('active', btn.textContent === curr);
             });
-            updateTotalBalance();
+            updateTotalBalance(); // Pastikan ini dipanggil untuk update tampilan
         }
 
         // ==========================================
@@ -2528,6 +2534,11 @@
 
         function convertFromIDR(amount, currency) {
             if (currency === 'USD') return amount / EXCHANGE_RATE;
+            return amount;
+        }
+
+        function convertToUSD(amount, currency) {
+            if (currency === 'IDR') return amount / EXCHANGE_RATE;
             return amount;
         }
 
