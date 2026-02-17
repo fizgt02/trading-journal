@@ -2195,10 +2195,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
-    // Cegah double event listener dengan flag
-    if (window.eventListenersInitialized) return;
-    window.eventListenersInitialized = true;
-
     // Close modals on outside click
     document.getElementById('tradeModal').addEventListener('click', function(e) {
         if (e.target === this) closeTradeModal();
@@ -2217,24 +2213,25 @@ function setupEventListeners() {
         }, 300));
     }
 
-    // Navigation click handlers - HAPUS INI JIKA ADA DI TEMPAT LAIN
+    // Navigation click handlers
     document.querySelectorAll('.nav-links li').forEach(link => {
         link.addEventListener('click', () => {
             switchSection(link.dataset.section, link.dataset.content);
         });
     });
 
-    // ✅ Event listener hanya sekali dengan {once: true} atau flag
+    // ✅ PERBAIKAN BUG 1 & 2: Event listener hanya ditambahkan sekali
+    // dan menghapus onsubmit dari HTML (gunakan preventDefault)
     const tradeForm = document.getElementById('tradeForm');
-    if (tradeForm && !tradeForm.dataset.listenerAdded) {
-        tradeForm.dataset.listenerAdded = 'true';
+    if (tradeForm) {
+        // Hapus onsubmit attribute jika ada untuk mencegah double submit
         tradeForm.removeAttribute('onsubmit');
         tradeForm.addEventListener('submit', saveTrade);
     }
 
     const projectForm = document.getElementById('projectForm');
-    if (projectForm && !projectForm.dataset.listenerAdded) {
-        projectForm.dataset.listenerAdded = 'true';
+    if (projectForm) {
+        // Hapus onsubmit attribute jika ada
         projectForm.removeAttribute('onsubmit');
         projectForm.addEventListener('submit', saveProject);
     }
@@ -2307,36 +2304,16 @@ function handleRealtimeUpdate(payload) {
     
     switch(eventType) {
         case 'INSERT':
-            // ✅ CEGAH DUPLIKAT: Cek apakah data sudah ada
-            const existingIndex = tradesData.findIndex(t => t.id === newRecord.id);
-            if (existingIndex === -1) {
-                // Data belum ada, tambahkan
-                tradesData.unshift(newRecord);
-            } else {
-                // Data sudah ada, update saja (jaga-jaga)
-                tradesData[existingIndex] = newRecord;
-            }
+            tradesData.unshift(newRecord);
             break;
-            
         case 'UPDATE':
             const index = tradesData.findIndex(t => t.id === oldRecord.id);
             if (index !== -1) tradesData[index] = newRecord;
             break;
-            
         case 'DELETE':
             tradesData = tradesData.filter(t => t.id !== oldRecord.id);
             break;
     }
-    
-    updateStats();
-    renderCharts();
-    renderTradeTable();
-    
-    // Hanya tampilkan notifikasi jika data benar-benar baru dari real-time (bukan dari submit sendiri)
-    if (eventType === 'INSERT' && newRecord.user_id !== currentUser.id) {
-        showNotification('Data baru dari real-time', 'info');
-    }
-}
     
     updateStats();
     renderCharts();
@@ -3040,15 +3017,9 @@ function addTargetInput() {
 async function saveProject(event) {
     event.preventDefault();
     
-    // ✅ CEGAH DOUBLE SUBMIT
-    if (window.isSubmittingProject) return;
-    window.isSubmittingProject = true;
-    
+    // ✅ PERBAIKAN BUG 2: Cegah double submit dengan disable tombol segera
     const btn = event.target.querySelector('button[type="submit"]');
-    if (btn.disabled) {
-        window.isSubmittingProject = false;
-        return;
-    }
+    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
     
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
@@ -3090,9 +3061,6 @@ async function saveProject(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
-        setTimeout(() => {
-            window.isSubmittingProject = false;
-        }, 500);
     }
 }
 
@@ -3140,16 +3108,9 @@ function closeTradeModal() {
 async function saveTrade(event) {
     event.preventDefault();
     
-    // ✅ CEGAH DOUBLE SUBMIT - Check flag
-    if (window.isSubmittingTrade) return;
-    window.isSubmittingTrade = true;
-    
-    // Cegah double submit via button
+    // Cegah double submit
     const btn = event.target.querySelector('button[type="submit"]');
-    if (btn.disabled) {
-        window.isSubmittingTrade = false;
-        return;
-    }
+    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
     
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
@@ -3160,12 +3121,19 @@ async function saveTrade(event) {
         const result = formData.get('result');
         let pnl = parseFloat(formData.get('pnl')) || 0;
         
-        // Validasi PNL sesuai result
+        // ✅ PERBAIKAN BUG 3: Validasi PNL sesuai result
         if (result === 'WIN') {
-            if (pnl < 0) pnl = Math.abs(pnl);
+            // WIN harus positif
+            if (pnl < 0) {
+                pnl = Math.abs(pnl); // Ubah ke positif
+            }
         } else if (result === 'LOSS') {
-            if (pnl > 0) pnl = -Math.abs(pnl);
+            // LOSS harus negatif
+            if (pnl > 0) {
+                pnl = -Math.abs(pnl); // Ubah ke negatif
+            }
         } else if (result === 'BREAKEVEN') {
+            // BREAKEVEN harus 0
             pnl = 0;
         }
         
@@ -3178,13 +3146,14 @@ async function saveTrade(event) {
             side: formData.get('side'),
             time_frame: formData.get('time_frame') || null,
             risk_reward: formData.get('risk_reward') || null,
-            pnl: pnl,
+            pnl: pnl, // PNL yang sudah divalidasi
             image_before: formData.get('image_before') || null,
             image_after: formData.get('image_after') || null,
             note: formData.get('note') || null
         };
 
         if (currentEditId) {
+            // Update existing
             const { data, error } = await supabaseClient
                 .from('trades')
                 .update(tradeData)
@@ -3198,6 +3167,7 @@ async function saveTrade(event) {
             
             showNotification('Trade berhasil diupdate!', 'success');
         } else {
+            // Add new
             const { data, error } = await supabaseClient
                 .from('trades')
                 .insert([tradeData])
@@ -3220,10 +3190,6 @@ async function saveTrade(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
-        // ✅ Reset flag setelah selesai (dengan delay)
-        setTimeout(() => {
-            window.isSubmittingTrade = false;
-        }, 500);
     }
 }
 
@@ -3426,6 +3392,4 @@ async function logout() {
 }
     </script>
 </body>
-
 </html>
-
