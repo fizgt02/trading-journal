@@ -2195,6 +2195,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
+    // Cegah double event listener dengan flag
+    if (window.eventListenersInitialized) return;
+    window.eventListenersInitialized = true;
+
     // Close modals on outside click
     document.getElementById('tradeModal').addEventListener('click', function(e) {
         if (e.target === this) closeTradeModal();
@@ -2213,25 +2217,24 @@ function setupEventListeners() {
         }, 300));
     }
 
-    // Navigation click handlers
+    // Navigation click handlers - HAPUS INI JIKA ADA DI TEMPAT LAIN
     document.querySelectorAll('.nav-links li').forEach(link => {
         link.addEventListener('click', () => {
             switchSection(link.dataset.section, link.dataset.content);
         });
     });
 
-    // ✅ PERBAIKAN BUG 1 & 2: Event listener hanya ditambahkan sekali
-    // dan menghapus onsubmit dari HTML (gunakan preventDefault)
+    // ✅ Event listener hanya sekali dengan {once: true} atau flag
     const tradeForm = document.getElementById('tradeForm');
-    if (tradeForm) {
-        // Hapus onsubmit attribute jika ada untuk mencegah double submit
+    if (tradeForm && !tradeForm.dataset.listenerAdded) {
+        tradeForm.dataset.listenerAdded = 'true';
         tradeForm.removeAttribute('onsubmit');
         tradeForm.addEventListener('submit', saveTrade);
     }
 
     const projectForm = document.getElementById('projectForm');
-    if (projectForm) {
-        // Hapus onsubmit attribute jika ada
+    if (projectForm && !projectForm.dataset.listenerAdded) {
+        projectForm.dataset.listenerAdded = 'true';
         projectForm.removeAttribute('onsubmit');
         projectForm.addEventListener('submit', saveProject);
     }
@@ -3017,9 +3020,15 @@ function addTargetInput() {
 async function saveProject(event) {
     event.preventDefault();
     
-    // ✅ PERBAIKAN BUG 2: Cegah double submit dengan disable tombol segera
+    // ✅ CEGAH DOUBLE SUBMIT
+    if (window.isSubmittingProject) return;
+    window.isSubmittingProject = true;
+    
     const btn = event.target.querySelector('button[type="submit"]');
-    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
+    if (btn.disabled) {
+        window.isSubmittingProject = false;
+        return;
+    }
     
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
@@ -3061,6 +3070,9 @@ async function saveProject(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
+        setTimeout(() => {
+            window.isSubmittingProject = false;
+        }, 500);
     }
 }
 
@@ -3108,9 +3120,16 @@ function closeTradeModal() {
 async function saveTrade(event) {
     event.preventDefault();
     
-    // Cegah double submit
+    // ✅ CEGAH DOUBLE SUBMIT - Check flag
+    if (window.isSubmittingTrade) return;
+    window.isSubmittingTrade = true;
+    
+    // Cegah double submit via button
     const btn = event.target.querySelector('button[type="submit"]');
-    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
+    if (btn.disabled) {
+        window.isSubmittingTrade = false;
+        return;
+    }
     
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
@@ -3121,19 +3140,12 @@ async function saveTrade(event) {
         const result = formData.get('result');
         let pnl = parseFloat(formData.get('pnl')) || 0;
         
-        // ✅ PERBAIKAN BUG 3: Validasi PNL sesuai result
+        // Validasi PNL sesuai result
         if (result === 'WIN') {
-            // WIN harus positif
-            if (pnl < 0) {
-                pnl = Math.abs(pnl); // Ubah ke positif
-            }
+            if (pnl < 0) pnl = Math.abs(pnl);
         } else if (result === 'LOSS') {
-            // LOSS harus negatif
-            if (pnl > 0) {
-                pnl = -Math.abs(pnl); // Ubah ke negatif
-            }
+            if (pnl > 0) pnl = -Math.abs(pnl);
         } else if (result === 'BREAKEVEN') {
-            // BREAKEVEN harus 0
             pnl = 0;
         }
         
@@ -3146,14 +3158,13 @@ async function saveTrade(event) {
             side: formData.get('side'),
             time_frame: formData.get('time_frame') || null,
             risk_reward: formData.get('risk_reward') || null,
-            pnl: pnl, // PNL yang sudah divalidasi
+            pnl: pnl,
             image_before: formData.get('image_before') || null,
             image_after: formData.get('image_after') || null,
             note: formData.get('note') || null
         };
 
         if (currentEditId) {
-            // Update existing
             const { data, error } = await supabaseClient
                 .from('trades')
                 .update(tradeData)
@@ -3167,7 +3178,6 @@ async function saveTrade(event) {
             
             showNotification('Trade berhasil diupdate!', 'success');
         } else {
-            // Add new
             const { data, error } = await supabaseClient
                 .from('trades')
                 .insert([tradeData])
@@ -3190,6 +3200,10 @@ async function saveTrade(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
+        // ✅ Reset flag setelah selesai (dengan delay)
+        setTimeout(() => {
+            window.isSubmittingTrade = false;
+        }, 500);
     }
 }
 
@@ -3392,4 +3406,5 @@ async function logout() {
 }
     </script>
 </body>
+
 </html>
