@@ -1,8 +1,9 @@
 // script.js - Satu file untuk semua auth logic
 console.log('script.js berhasil dimuat!');
 
-const SUPABASE_URL = 'https://xugvfahhmjidhlvtfvua.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_UFcMgjZdauFvAusQm4JtXA_c8XvYqO2';
+        const SUPABASE_URL = 'https://bidhhwcuhisuptgonyfd.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UWhv8EzFD1xm0U_to2Z8dw_mt61Z09j';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZGhod2N1aGlzdXB0Z29ueWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTgxNDksImV4cCI6MjA4Njg3NDE0OX0.fb7FGMAEOHhyYpsTpzJ9ZGZpwQaA8INnHtq9NiHqCwU'
 
 // Buat client sekali saja
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
