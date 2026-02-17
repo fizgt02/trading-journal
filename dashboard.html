@@ -2154,7 +2154,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Initialization error:', error);
         showNotification('Error initializing app: ' + error.message, 'error');
-        // Hide loading screen on error
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
@@ -2176,10 +2175,13 @@ function setupEventListeners() {
     });
 
     // Search functionality
-    document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        filterTrades(searchTerm);
-    }, 300));
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filterTrades(searchTerm);
+        }, 300));
+    }
 
     // Navigation click handlers
     document.querySelectorAll('.nav-links li').forEach(link => {
@@ -2187,31 +2189,38 @@ function setupEventListeners() {
             switchSection(link.dataset.section, link.dataset.content);
         });
     });
+
+    // ✅ PERBAIKAN: Event listener untuk Trade Form
+    const tradeForm = document.getElementById('tradeForm');
+    if (tradeForm) {
+        tradeForm.addEventListener('submit', saveTrade);
+    }
+
+    // ✅ PERBAIKAN: Event listener untuk Project Form
+    const projectForm = document.getElementById('projectForm');
+    if (projectForm) {
+        projectForm.addEventListener('submit', saveProject);
+    }
 }
 
 // ==========================================
 // DASHBOARD INITIALIZATION
 // ==========================================
 async function initializeDashboard() {
-    // Update UI with user data
     updateUserUI(currentUser);
     
-    // Load all data
     await Promise.all([
         loadTrades(),
         loadProjects()
     ]);
     
-    // Render everything
     updateStats();
     renderCharts();
     renderTradeTable();
     renderProjects();
     
-    // Setup real-time subscription for trades
     setupRealtimeSubscription();
     
-    // Hide loading screen
     setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
@@ -2272,7 +2281,6 @@ function handleRealtimeUpdate(payload) {
             break;
     }
     
-    // Refresh UI
     updateStats();
     renderCharts();
     renderTradeTable();
@@ -2330,7 +2338,6 @@ function updateStats() {
     const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
     const totalPnL = tradesData.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
     
-    // Profit Factor
     const grossProfit = tradesData
         .filter(t => parseFloat(t.pnl) > 0)
         .reduce((sum, t) => sum + parseFloat(t.pnl), 0);
@@ -2340,20 +2347,17 @@ function updateStats() {
     const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : 
                         grossProfit > 0 ? '∞' : '-';
 
-    // Update DOM
     document.getElementById('totalTrades').textContent = total;
     document.getElementById('winRate').textContent = winRate + '%';
     document.getElementById('totalPnL').textContent = formatCurrency(totalPnL);
     document.getElementById('profitFactor').textContent = profitFactor;
 
-    // Trends
     document.getElementById('totalTradesTrend').textContent = total + ' trades';
     document.getElementById('winRateTrend').textContent = winRate >= 50 ? 'Good' : 'Improve';
     document.getElementById('winRateTrend').className = 'trend ' + (winRate >= 50 ? 'positive' : 'negative');
     document.getElementById('pnlTrend').textContent = (totalPnL >= 0 ? '+' : '') + formatCurrency(totalPnL);
     document.getElementById('pnlTrend').className = 'trend ' + (totalPnL >= 0 ? 'positive' : 'negative');
 
-    // Analytics metrics
     updateAnalyticsMetrics();
 }
 
@@ -2373,7 +2377,6 @@ function updateAnalyticsMetrics() {
     
     const expectancy = (winRate * avgWin) - (lossRate * avgLoss);
     
-    // Max Drawdown
     let maxDrawdown = 0;
     let peak = 0;
     let runningPnL = 0;
@@ -2866,7 +2869,6 @@ function filterTrades(searchTerm) {
         trade.result?.toLowerCase().includes(searchTerm)
     );
     
-    // Re-render with filtered data
     const container = document.getElementById('tradeHistoryTable');
     if (filtered.length === 0) {
         container.innerHTML = `
@@ -2878,12 +2880,11 @@ function filterTrades(searchTerm) {
         return;
     }
     
-    // Render filtered table (simplified - in production, modify renderTradeTable to accept data param)
     renderTradeTable(); 
 }
 
 // ==========================================
-// PROJECTS
+// PROJECTS / GOALS
 // ==========================================
 function renderProjects() {
     const container = document.getElementById('projectsGrid');
@@ -2939,7 +2940,6 @@ async function toggleTarget(projectId, targetIdx) {
     const completedCount = project.targets.filter(t => t.completed).length;
     project.progress = Math.round((completedCount / project.targets.length) * 100);
     
-    // Update in database
     try {
         const { error } = await supabaseClient
             .from('projects')
@@ -2960,7 +2960,7 @@ function openProjectModal() {
     document.getElementById('projectModal').classList.add('active');
     document.getElementById('projectForm').reset();
     document.getElementById('targetsContainer').innerHTML = `
-        <input type="text" class="target-input" placeholder="Target 1" style="margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+        <input type="text" class="target-input" name="target[]" placeholder="Target 1" style="margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
     `;
 }
 
@@ -2968,37 +2968,47 @@ function closeProjectModal() {
     document.getElementById('projectModal').classList.remove('active');
 }
 
+// ✅ PERBAIKAN: Fungsi addTargetInput yang benar
 function addTargetInput() {
     const container = document.getElementById('targetsContainer');
-    const count = container.children.length + 1;
+    const count = container.querySelectorAll('.target-input').length + 1;
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'target-input';
+    input.name = 'target[]';
     input.placeholder = `Target ${count}`;
     input.style.cssText = 'margin-bottom: 0.5rem; width: 100%; padding: 0.8rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary);';
     container.appendChild(input);
 }
 
+// ✅ PERBAIKAN: Fungsi saveProject yang benar
 async function saveProject(event) {
     event.preventDefault();
     
-    const title = document.getElementById('projectTitle').value;
-    const description = document.getElementById('projectDescription').value;
-    const targetInputs = document.querySelectorAll('.target-input');
-    const targets = Array.from(targetInputs)
-        .map(input => ({ text: input.value, completed: false }))
-        .filter(t => t.text.trim() !== '');
-    
-    const newProject = {
-        user_id: currentUser.id,
-        title,
-        description,
-        status: 'active',
-        targets: targets.length > 0 ? targets : [{ text: 'Complete project', completed: false }],
-        progress: 0
-    };
+    const btn = event.target.querySelector('button[type=\"submit\"]');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<div class=\"spinner\"></div> Menyimpan...';
+    btn.disabled = true;
     
     try {
+        const title = document.getElementById('projectTitle').value;
+        const description = document.getElementById('projectDescription').value;
+        
+        // ✅ PERBAIKAN: Ambil semua input dengan class target-input
+        const targetInputs = document.querySelectorAll('#targetsContainer .target-input');
+        const targets = Array.from(targetInputs)
+            .map(input => ({ text: input.value, completed: false }))
+            .filter(t => t.text.trim() !== '');
+        
+        const newProject = {
+            user_id: currentUser.id,
+            title,
+            description,
+            status: 'active',
+            targets: targets.length > 0 ? targets : [{ text: 'Complete project', completed: false }],
+            progress: 0
+        };
+        
         const { data, error } = await supabaseClient
             .from('projects')
             .insert([newProject])
@@ -3012,7 +3022,11 @@ async function saveProject(event) {
         showNotification('Target berhasil ditambahkan!', 'success');
         
     } catch (error) {
+        console.error('Error saving project:', error);
         showNotification('Error: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
     }
 }
 
@@ -3056,31 +3070,33 @@ function closeTradeModal() {
     currentEditId = null;
 }
 
+// ✅ PERBAIKAN: Fungsi saveTrade yang benar
 async function saveTrade(event) {
     event.preventDefault();
     
-    const btn = document.getElementById('saveTradeBtn');
+    // ✅ PERBAIKAN: Cari tombol submit dengan querySelector, bukan getElementById
+    const btn = event.target.querySelector('button[type=\"submit\"]');
     const originalContent = btn.innerHTML;
-    btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
+    btn.innerHTML = '<div class=\"spinner\"></div> Menyimpan...';
     btn.disabled = true;
     
-    const formData = new FormData(event.target);
-    const tradeData = {
-        user_id: currentUser.id,
-        result: formData.get('result'),
-        symbol: formData.get('symbol').toUpperCase(),
-        open_date: formData.get('open_date'),
-        type: formData.get('type'),
-        side: formData.get('side'),
-        time_frame: formData.get('time_frame') || null,
-        risk_reward: formData.get('risk_reward') || null,
-        pnl: parseFloat(formData.get('pnl')) || 0,
-        image_before: formData.get('image_before') || null,
-        image_after: formData.get('image_after') || null,
-        note: formData.get('note') || null
-    };
-
     try {
+        const formData = new FormData(event.target);
+        const tradeData = {
+            user_id: currentUser.id,
+            result: formData.get('result'),
+            symbol: formData.get('symbol').toUpperCase(),
+            open_date: formData.get('open_date'),
+            type: formData.get('type'),
+            side: formData.get('side'),
+            time_frame: formData.get('time_frame') || null,
+            risk_reward: formData.get('risk_reward') || null,
+            pnl: parseFloat(formData.get('pnl')) || 0,
+            image_before: formData.get('image_before') || null,
+            image_after: formData.get('image_after') || null,
+            note: formData.get('note') || null
+        };
+
         if (currentEditId) {
             // Update existing
             const { data, error } = await supabaseClient
@@ -3114,6 +3130,7 @@ async function saveTrade(event) {
         renderTradeTable();
         
     } catch (error) {
+        console.error('Error saving trade:', error);
         showNotification('Error: ' + error.message, 'error');
     } finally {
         btn.innerHTML = originalContent;
@@ -3180,7 +3197,6 @@ function switchSection(section, contentId) {
         }
     });
 
-    // Close dropdowns
     document.getElementById('profileDropdown').classList.remove('active');
     document.getElementById('notifDropdown').classList.remove('active');
 }
@@ -3211,7 +3227,6 @@ function toggleTheme() {
         html.classList.replace('light-theme', 'dark-theme');
     }
     
-    // Update charts theme
     updateChartsTheme();
 }
 
@@ -3264,8 +3279,8 @@ function showNotification(message, type = 'success') {
                 type === 'error' ? 'times-circle' : 'info-circle';
     
     notification.innerHTML = `
-        <i class="fas fa-${icon}"></i>
-        <div class="notification-content">
+        <i class=\"fas fa-${icon}\"></i>
+        <div class=\"notification-content\">
             <p>${message}</p>
         </div>
     `;
@@ -3303,3 +3318,4 @@ document.addEventListener('click', (e) => {
 </body>
 
 </html>
+
