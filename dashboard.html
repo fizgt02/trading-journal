@@ -1571,6 +1571,53 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+        /* App Switcher */
+.app-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.app-switcher span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.app-switcher span.active {
+    color: var(--accent-primary);
+}
+
+.switch-btn {
+    width: 50px;
+    height: 26px;
+    background: var(--bg-secondary);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid var(--accent-primary);
+    transition: all 0.3s;
+}
+
+.switch-btn::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s;
+}
+
+.switch-btn.budget::after {
+    left: 26px;
+}
     </style>
 </head>
 <body>
@@ -1628,24 +1675,12 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="notifications">
-                        <div class="notification-trigger" onclick="toggleNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge" id="notifBadge" style="display: none;">0</span>
+
+                       <div class="app-switcher">
+                             <span class="active">Trading</span>
+                                <div class="switch-btn" onclick="switchApp()"></div>
+                            <span>Budget</span>
                         </div>
-                        <div class="notifications-dropdown" id="notifDropdown">
-                            <div class="notifications-header">
-                                <h3 class="notifications-title">Notifikasi</h3>
-                                <span class="mark-all" onclick="markAllRead()">Tandai semua dibaca</span>
-                            </div>
-                            <div class="notification-list" id="notifList">
-                                <div class="empty-state" style="padding: 2rem;">
-                                    <i class="fas fa-bell-slash"></i>
-                                    <p>Tidak ada notifikasi</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="profile">
                         <div class="profile-trigger" onclick="toggleProfile()">
@@ -2117,16 +2152,17 @@ let projectsData = [];
 let currentEditId = null;
 let charts = {};
 let supabaseClient = null;
-let isSubmitting = false; // ✅ TAMBAHAN: Cegah double submit
 
 // ==========================================
 // INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Initialize Supabase client
         const { createClient } = supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // Check existing session
         const { data: { session }, error } = await supabaseClient.auth.getSession();
         
         if (error) throw error;
@@ -2139,6 +2175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'index.html';
         }
         
+        // Listen for auth changes
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 currentSession = session;
@@ -2172,6 +2209,7 @@ function setupEventListeners() {
         if (e.target === this) closeProjectModal();
     });
 
+    // Search functionality
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(function(e) {
@@ -2180,20 +2218,25 @@ function setupEventListeners() {
         }, 300));
     }
 
+    // Navigation click handlers
     document.querySelectorAll('.nav-links li').forEach(link => {
         link.addEventListener('click', () => {
             switchSection(link.dataset.section, link.dataset.content);
         });
     });
 
+    // ✅ PERBAIKAN BUG 1 & 2: Event listener hanya ditambahkan sekali
+    // dan menghapus onsubmit dari HTML (gunakan preventDefault)
     const tradeForm = document.getElementById('tradeForm');
     if (tradeForm) {
+        // Hapus onsubmit attribute jika ada untuk mencegah double submit
         tradeForm.removeAttribute('onsubmit');
         tradeForm.addEventListener('submit', saveTrade);
     }
 
     const projectForm = document.getElementById('projectForm');
     if (projectForm) {
+        // Hapus onsubmit attribute jika ada
         projectForm.removeAttribute('onsubmit');
         projectForm.addEventListener('submit', saveProject);
     }
@@ -2261,40 +2304,26 @@ function setupRealtimeSubscription() {
         .subscribe();
 }
 
-// ✅ PERBAIKAN: Cek duplikat sebelum tambah ke array
 function handleRealtimeUpdate(payload) {
     const { eventType, new: newRecord, old: oldRecord } = payload;
     
     switch(eventType) {
         case 'INSERT':
-            // ✅ Cek apakah data sudah ada (hindari duplikat)
-            const exists = tradesData.some(t => t.id === newRecord.id);
-            if (!exists) {
-                tradesData.unshift(newRecord);
-                updateStats();
-                renderCharts();
-                renderTradeTable();
-                showNotification('Data diperbarui secara real-time', 'info');
-            }
+            tradesData.unshift(newRecord);
             break;
-            
         case 'UPDATE':
             const index = tradesData.findIndex(t => t.id === oldRecord.id);
-            if (index !== -1) {
-                tradesData[index] = newRecord;
-                updateStats();
-                renderCharts();
-                renderTradeTable();
-            }
+            if (index !== -1) tradesData[index] = newRecord;
             break;
-            
         case 'DELETE':
             tradesData = tradesData.filter(t => t.id !== oldRecord.id);
-            updateStats();
-            renderCharts();
-            renderTradeTable();
             break;
     }
+    
+    updateStats();
+    renderCharts();
+    renderTradeTable();
+    showNotification('Data diperbarui secara real-time', 'info');
 }
 
 // ==========================================
@@ -2524,6 +2553,7 @@ function renderSymbolStats() {
 }
 
 function renderAnalyticsCharts() {
+    // P&L Distribution
     const pnlRanges = {
         '>$500': 0,
         '$200-$500': 0,
@@ -2570,6 +2600,7 @@ function renderAnalyticsCharts() {
     charts.pnlDist = new ApexCharts(document.querySelector("#pnlDistributionChart"), pnlOptions);
     charts.pnlDist.render();
 
+    // Symbol Performance
     const symbolPnL = {};
     tradesData.forEach(trade => {
         const symbol = trade.symbol?.toUpperCase() || 'Unknown';
@@ -2617,6 +2648,7 @@ function renderAnalyticsCharts() {
     charts.symbolPerf = new ApexCharts(document.querySelector("#symbolPerformanceChart"), symbolOptions);
     charts.symbolPerf.render();
 
+    // Day Performance
     const dayStats = { 'Sen': {w:0, l:0}, 'Sel': {w:0, l:0}, 'Rab': {w:0, l:0}, 
                       'Kam': {w:0, l:0}, 'Jum': {w:0, l:0}, 'Sab': {w:0, l:0}, 'Min': {w:0, l:0} };
     const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
@@ -2653,6 +2685,7 @@ function renderAnalyticsCharts() {
     charts.dayPerf = new ApexCharts(document.querySelector("#dayPerformanceChart"), dayOptions);
     charts.dayPerf.render();
 
+    // Risk:Reward Analysis
     const rrStats = {};
     tradesData.forEach(trade => {
         const rr = trade.risk_reward || 'Unknown';
@@ -2692,6 +2725,7 @@ function renderAnalyticsCharts() {
     charts.rr = new ApexCharts(document.querySelector("#riskRewardChart"), rrOptions);
     charts.rr.render();
 
+    // Equity Curve
     let runningPnL = 0;
     const equityData = [];
     const sortedTrades = [...tradesData].sort((a, b) => 
@@ -2742,6 +2776,7 @@ function renderAnalyticsCharts() {
     charts.equity = new ApexCharts(document.querySelector("#equityCurveChart"), equityOptions);
     charts.equity.render();
 
+    // Monthly Performance
     const monthlyData = {};
     tradesData.forEach(trade => {
         const date = new Date(trade.open_date);
@@ -2798,16 +2833,6 @@ function updateCharts() {
 // TRADE TABLE
 // ==========================================
 function renderTradeTable() {
-    // ✅ PERBAIKAN: Hapus duplikat berdasarkan ID sebelum render
-    const uniqueTrades = tradesData.filter((trade, index, self) => 
-        index === self.findIndex((t) => t.id === trade.id)
-    );
-    
-    // Update tradesData dengan data unik
-    if (uniqueTrades.length !== tradesData.length) {
-        tradesData = uniqueTrades;
-    }
-    
     const container = document.getElementById('tradeHistoryTable');
     
     if (tradesData.length === 0) {
@@ -2901,15 +2926,6 @@ function filterTrades(searchTerm) {
 // PROJECTS / GOALS
 // ==========================================
 function renderProjects() {
-    // ✅ PERBAIKAN: Hapus duplikat berdasarkan ID
-    const uniqueProjects = projectsData.filter((project, index, self) => 
-        index === self.findIndex((p) => p.id === project.id)
-    );
-    
-    if (uniqueProjects.length !== projectsData.length) {
-        projectsData = uniqueProjects;
-    }
-    
     const container = document.getElementById('projectsGrid');
     
     if (projectsData.length === 0) {
@@ -3003,15 +3019,13 @@ function addTargetInput() {
     container.appendChild(input);
 }
 
-// ✅ PERBAIKAN: Tambahkan flag isSubmitting untuk cegah double submit
 async function saveProject(event) {
     event.preventDefault();
     
-    // Cegah double submit
-    if (isSubmitting) return;
-    isSubmitting = true;
-    
+    // ✅ PERBAIKAN BUG 2: Cegah double submit dengan disable tombol segera
     const btn = event.target.querySelector('button[type="submit"]');
+    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
+    
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
     btn.disabled = true;
@@ -3041,13 +3055,8 @@ async function saveProject(event) {
             
         if (error) throw error;
         
-        // ✅ PERBAIKAN: Cek duplikat sebelum push
-        const exists = projectsData.some(p => p.id === data[0].id);
-        if (!exists) {
-            projectsData.unshift(data[0]);
-            renderProjects();
-        }
-        
+        projectsData.unshift(data[0]);
+        renderProjects();
         closeProjectModal();
         showNotification('Target berhasil ditambahkan!', 'success');
         
@@ -3057,7 +3066,6 @@ async function saveProject(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
-        isSubmitting = false; // Reset flag
     }
 }
 
@@ -3101,15 +3109,14 @@ function closeTradeModal() {
     currentEditId = null;
 }
 
-// ✅ PERBAIKAN: Gunakan flag isSubmitting dan cek duplikat
+// ✅ PERBAIKAN BUG 1 & 3: Validasi PNL sesuai result dan cegah double submit
 async function saveTrade(event) {
     event.preventDefault();
     
     // Cegah double submit
-    if (isSubmitting) return;
-    isSubmitting = true;
-    
     const btn = event.target.querySelector('button[type="submit"]');
+    if (btn.disabled) return; // Jika sudah disabled, jangan proses lagi
+    
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
     btn.disabled = true;
@@ -3119,12 +3126,19 @@ async function saveTrade(event) {
         const result = formData.get('result');
         let pnl = parseFloat(formData.get('pnl')) || 0;
         
-        // Validasi PNL sesuai result
+        // ✅ PERBAIKAN BUG 3: Validasi PNL sesuai result
         if (result === 'WIN') {
-            if (pnl < 0) pnl = Math.abs(pnl);
+            // WIN harus positif
+            if (pnl < 0) {
+                pnl = Math.abs(pnl); // Ubah ke positif
+            }
         } else if (result === 'LOSS') {
-            if (pnl > 0) pnl = -Math.abs(pnl);
+            // LOSS harus negatif
+            if (pnl > 0) {
+                pnl = -Math.abs(pnl); // Ubah ke negatif
+            }
         } else if (result === 'BREAKEVEN') {
+            // BREAKEVEN harus 0
             pnl = 0;
         }
         
@@ -3137,7 +3151,7 @@ async function saveTrade(event) {
             side: formData.get('side'),
             time_frame: formData.get('time_frame') || null,
             risk_reward: formData.get('risk_reward') || null,
-            pnl: pnl,
+            pnl: pnl, // PNL yang sudah divalidasi
             image_before: formData.get('image_before') || null,
             image_after: formData.get('image_after') || null,
             note: formData.get('note') || null
@@ -3166,19 +3180,14 @@ async function saveTrade(event) {
                 
             if (error) throw error;
             
-            // ✅ PERBAIKAN: Cek duplikat sebelum push ke array
-            const exists = tradesData.some(t => t.id === data[0].id);
-            if (!exists) {
-                tradesData.unshift(data[0]);
-                updateStats();
-                renderCharts();
-                renderTradeTable();
-            }
-            
+            tradesData.unshift(data[0]);
             showNotification('Trade berhasil ditambahkan!', 'success');
         }
 
         closeTradeModal();
+        updateStats();
+        renderCharts();
+        renderTradeTable();
         
     } catch (error) {
         console.error('Error saving trade:', error);
@@ -3186,7 +3195,6 @@ async function saveTrade(event) {
     } finally {
         btn.innerHTML = originalContent;
         btn.disabled = false;
-        isSubmitting = false; // Reset flag
     }
 }
 
@@ -3366,7 +3374,10 @@ document.addEventListener('click', (e) => {
         document.getElementById('profileDropdown').classList.remove('active');
     }
 });
+
+function switchApp() {
+    window.location.href = 'budget.html';
+}
     </script>
 </body>
-
 </html>
