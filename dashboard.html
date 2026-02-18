@@ -1898,6 +1898,117 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+             /* Trade Detail Modal Styles */
+        .trade-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            background: var(--glass-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .detail-value.positive { color: var(--success); }
+        .detail-value.negative { color: var(--danger); }
+
+        .detail-images {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .detail-image-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1rem;
+            background: var(--gradient-1);
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .detail-image-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .detail-image-link i {
+            font-size: 1.2rem;
+        }
+
+        .detail-note {
+            background: var(--glass-bg);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            min-height: 100px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .detail-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .detail-badge.win { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .detail-badge.loss { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .detail-badge.breakeven { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .detail-badge.buy { background: rgba(99, 102, 241, 0.2); color: var(--primary-color); }
+        .detail-badge.sell { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Make table rows clickable */
+        .trade-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .trade-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.1) !important;
+        }
+
+        /* Prevent click on action buttons from triggering row click */
+        .action-btns {
+            position: relative;
+            z-index: 10;
+        }
+
+        .btn-action {
+            position: relative;
+            z-index: 11;
+        }
+
     </style>
 </head>
 <body>
@@ -2424,6 +2535,29 @@
             </form>
         </div>
     </div>
+    <!-- Trade Detail Modal -->
+    <div class="modal-overlay" id="tradeDetailModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-eye"></i>
+                    <span>Trade Details</span>
+                </h2>
+                <button class="btn-close" onclick="closeTradeDetailModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="tradeDetailContent">
+                <!-- Content akan diisi oleh JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeTradeDetailModal()">Close</button>
+                <button type="button" class="btn-save" onclick="editCurrentTrade()">
+                    <i class="fas fa-edit"></i> Edit Trade
+                </button>
+            </div>
+        </div>
+    </div>
     <script>
         // ==========================================
 // SUPABASE CONFIGURATION
@@ -2687,6 +2821,156 @@ function setLanguage(lang) {
         lang === 'en' ? 'Language changed to English' : 'Bahasa diubah ke Indonesia', 
         'success'
     );
+
+            // Variable untuk menyimpan trade yang sedang dilihat detailnya
+        let currentDetailTradeId = null;
+
+        // ==========================================
+        // TRADE DETAIL MODAL FUNCTIONS
+        // ==========================================
+
+        function openTradeDetailModal(tradeId) {
+            const trade = tradesData.find(t => t.id === tradeId);
+            if (!trade) return;
+
+            currentDetailTradeId = tradeId;
+            
+            const modal = document.getElementById('tradeDetailModal');
+            const content = document.getElementById('tradeDetailContent');
+            
+            // Format P&L
+            const pnlValue = parseFloat(trade.pnl) || 0;
+            const pnlClass = pnlValue > 0 ? 'positive' : pnlValue < 0 ? 'negative' : '';
+            const pnlSign = pnlValue > 0 ? '+' : '';
+            
+            // Format result badge
+            const resultClass = trade.result?.toLowerCase() || 'breakeven';
+            
+            // Format side badge
+            const sideClass = trade.side?.toLowerCase() || 'buy';
+            
+            // Build images section
+            let imagesHtml = '';
+            if (trade.image_before || trade.image_after) {
+                imagesHtml = `
+                    <div class="detail-item full-width">
+                        <div class="detail-label">Screenshots</div>
+                        <div class="detail-images">
+                            ${trade.image_before ? `
+                                <a href="${trade.image_before}" target="_blank" class="detail-image-link">
+                                    <i class="fas fa-image"></i>
+                                    <span>Before Trade</span>
+                                </a>
+                            ` : ''}
+                            ${trade.image_after ? `
+                                <a href="${trade.image_after}" target="_blank" class="detail-image-link">
+                                    <i class="fas fa-image"></i>
+                                    <span>After Trade</span>
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Build note section
+            const noteHtml = trade.note ? `
+                <div class="detail-item full-width">
+                    <div class="detail-label">Note / Analysis</div>
+                    <div class="detail-note">${escapeHtml(trade.note)}</div>
+                </div>
+            ` : '';
+            
+            content.innerHTML = `
+                <div class="trade-detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Result</div>
+                        <div class="detail-value">
+                            <span class="detail-badge ${resultClass}">${trade.result || '-'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Symbol</div>
+                        <div class="detail-value" style="font-size: 1.3rem;">${trade.symbol || '-'}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Type</div>
+                        <div class="detail-value">${trade.type || '-'}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Side</div>
+                        <div class="detail-value">
+                            <span class="detail-badge ${sideClass}">${trade.side?.toUpperCase() || '-'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Open Date</div>
+                        <div class="detail-value">${formatDateTime(trade.open_date)}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Time Frame</div>
+                        <div class="detail-value">${trade.time_frame || '-'}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Risk:Reward</div>
+                        <div class="detail-value">${trade.risk_reward || '-'}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">P&L</div>
+                        <div class="detail-value ${pnlClass}" style="font-size: 1.3rem;">
+                            ${pnlSign}${formatCurrency(trade.pnl)}
+                        </div>
+                    </div>
+                    
+                    ${imagesHtml}
+                    ${noteHtml}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeTradeDetailModal() {
+            const modal = document.getElementById('tradeDetailModal');
+            modal.classList.remove('active');
+            currentDetailTradeId = null;
+        }
+
+        function editCurrentTrade() {
+            if (currentDetailTradeId) {
+                closeTradeDetailModal();
+                editTrade(currentDetailTradeId);
+            }
+        }
+
+        // Helper function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Helper function to format date and time
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString(currentLanguage === 'en' ? 'en-US' : 'id-ID', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
     
     // Refresh charts and tables to update labels
     updateStats();
@@ -2748,6 +3032,7 @@ function setupEventListeners() {
     const tradeModal = document.getElementById('tradeModal');
     const projectModal = document.getElementById('projectModal');
     const dayTradesModal = document.getElementById('dayTradesModal');
+    const tradeDetailModal = document.getElementById('tradeDetailModal'); // TAMBAHKAN INI
     
     if (tradeModal) {
         tradeModal.addEventListener('click', function(e) {
@@ -2764,6 +3049,13 @@ function setupEventListeners() {
     if (dayTradesModal) {
         dayTradesModal.addEventListener('click', function(e) {
             if (e.target === this) closeDayTradesModal();
+        });
+    }
+
+    // TAMBAHKAN INI - Event listener untuk trade detail modal
+    if (tradeDetailModal) {
+        tradeDetailModal.addEventListener('click', function(e) {
+            if (e.target === this) closeTradeDetailModal();
         });
     }
 
@@ -4268,5 +4560,4 @@ async function logout() {
 }
     </script>
 </body>
-
 </html>
