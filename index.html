@@ -2,504 +2,1570 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>MoneyManage - Trading & Budget Dashboard</title>
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* Import Font */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        /* ==========================================
+           DESIGN SYSTEM - Consistent with Dashboard Apps
+           ========================================== */
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #64748b;
+            --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            --gradient-2: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+        }
 
-        /* Global Reset */
-        *{
-            padding: 0;
+        * {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        body{
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles (Disimpan jika nanti header ditambahkan kembali) */
-        header{
-            z-index: 889;
-            position: fixed;
-            background-color: rgba(255,255,255,0.1);
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.2s ease;
-        }
-
-        header.sticky{
-            background-color: #8F00FF;
-            padding: 10px 200px;
-        }
-
-        header .brand{
-            color: white;
-            font-size: 1.8em;
-            font-weight: 700;
-            text-transform: uppercase;
-            text-decoration: none;
-        }
-
-        header .navigation{
-            position: relative;
-        }
-
-        header .navigation a{
-            color: white;
-            font-size: 1em;
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 30px;
-        }
-
-        header .navigation a:hover{
-            color: #8F00FF;
-        }
-
-        header .sticky .navigation a:hover{
-            color: black;
-        }
-
-        /* Section Global */
-        section{
-            padding: 100px 200px;
-        }
-
-        /* Main Section */
-        .main{
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            background-image: url(Image/index.jpg);
-            background-size: 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-
-        .main .content{
-            max-width: 1000px;
-        }
-
-        .main .content h2{
-            color: white;
-            font-size: 1.5em; /* Fixed Typo: 1,5em to 1.5em */
-            font-weight: 500;
-        }
-
-        .main .content h2 span{
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .animated-text{
-            position: relative;
-            height: 70px;
-            overflow: hidden;
-        }
-
-        .animated-text h3{
-            color: rgba(0, 255, 34, 0.534);
-            font-size: 3em;
-            font-weight: 700;
-            line-height: 70px;
-            letter-spacing: 1px;
-        }
-
-        .animated-text h3:nth-child(1){
-            animation: text-move 6s infinite ease-out;
-        }
-
-        @keyframes text-move {
-            0%,15%{ margin-top: 0px; }
-            25%,40%{ margin-top: -70px; }
-            50%,65%{ margin-top: -140px; }
-            75%,90%{ margin-top: -70px; }
-            100%{ margin-top: 0px; }
-        }
-
-        .btn{
-            color: white;
-            background-color: #000000;
-            font-size: 1em;
-            font-weight: 600;
-            display: inline-block;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            text-decoration: none;
-            letter-spacing: 1px;
-            border-radius: 2px;
-            margin-top: 30px;
-            transition: 0.5s ease;
-        }
-
-        .btn:hover{
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .media-icons{
-            margin-top: 50px;
-        }
-
-        .media-icons a{
-            color: white;
-            font-size: 25px;
-            margin-right: 30px;
-        }
-
-        /* About Section */
-        .title{
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .section-title{
-            position: relative;
-            color: #000000;
-            font-size: 2.2em;
-            font-weight: 800;
-            margin-bottom: 60px;
-        }
-
-        .section-title::before{
-            content: "";
-            position: absolute;
-            top: 56px;
-            left: 50%;
-            width: 140px;
-            height: 4px;
-            background-color: #000000;
-            transform: translateX(-50%);
-        }
-
-        .section-title::after{
-            content: "";
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background-color: #000000;
-            transform: translateX(-50%);
-        }
-
-        .about .content{
-            position: relative;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 100px; /* Fixed Typo: 100ph to 100px */
-            gap: 40px;
-        }
-
-        .about .content .col-left{
-            position: relative;
-            width: 100%;
-        }
-
-        .about .content .col-right{
-            position: relative;
-            width: 70%;
-        }
-
-        .about .content .col-left .img-card{
-            position: relative;
-            width: 100%;
-            min-height: 400px;
-        }
-
-        .about .content .col-left .img-card img{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 30px;
-        }
-
-        .about .content .col-right .content-title{
-            font-size: 2em;
-            font-weight: 900;
-            margin-bottom: 20px;
-        }
-
-        .about .content .col-right .paragraph-text{
-            font-size: 1em;
-        }
-
-        /* Services Section */
-        .services .content{
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            flex-direction: row;
-            margin-top: 20px;
-        }
-
-        .title p{
-            font-size: 3em;
-            width: 100%;
-            text-align: center; /* Fixed: text-align 100% is invalid */
-        }
-
-        .services .content .card{
-            background-color: #fff;
-            width: 300px;
-            margin: 5px;
-            padding: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            border-radius: 10px;
-            box-shadow: 0 5px 25px rgba(1, 1, 1, 0.15); /* Fixed color syntax */
-            transition: 0.3s linear;
-        }
-
-        .services .content .card .service-icon{
-            color: #000000;
-            font-size: 5rem;
-            text-align: center;
-            transition: 0.3s linear;
-        }
-
-        .services .content .card .info{
-            text-align: center;
-        }
-
-        .services .content .card .info h3{
-            color: #000000;
-            font-size: 1rem;
-            font-weight: 700;
-            margin: 10px;
-            transition: 0.3s linear;
-        }
-
-        .services .content .card:hover{
-            background-color: #000000;
-            color: white;
-        }
-
-        .services .content .card:hover .service-icon,
-        .services .content .card:hover .info h3{
-            transform: translateY(-10px);
-            color: white;
-        }
-
-        /* Footer */
-        .footer{
-            background: #000000;
-            color: #fff;
-            text-align: center;
-            padding: 0.5em;
-        }
-        
-        .footer .footer-title{
-            font-size: 20px;
-            font-weight: 600;
-        }
-        
-        .footer p{
+        html {
+            scroll-behavior: smooth;
             font-size: 16px;
-            margin-top: 10px;
-        }
-        
-        .footer p a{
-            color: #990096;
-            font-weight: 600;
-            text-decoration: none;
         }
 
-        /* Scroll To Top Button Styles */
-        .scrollToTop-btn{
-            z-index: 999;
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ==========================================
+           NAVIGATION - Glassmorphism Style
+           ========================================== */
+        nav {
             position: fixed;
-            background: #8F00FF;
-            color: #fff;
-            width: 45px;
-            height: 45px;
-            right: 0;
-            bottom: 10px;
-            font-size: 22px;
-            text-align: center;
-            line-height: 45px;
-            border-radius: 3px;
-            cursor: pointer;
-            pointer-events: none;
-            opacity: 0;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 5%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
             transition: all 0.3s ease;
         }
 
-        /* Responsive Media Queries */
-        @media (max-width:1040px) {
-            header{ padding: 12px 20px; }
-            header.sticky{ padding: 10px 20px; }
-            header .navigation{ display: none; }
+        nav.scrolled {
+            padding: 0.5rem 5%;
+            background: rgba(15, 23, 42, 0.95);
+        }
 
-            .navigation.active{
-                z-index: 889;
-                position: fixed;
-                background-color: white;
-                top: 0;
-                right: 0;
-                width: 380px;
-                height: 100%;
-                display: flex;
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: clamp(0.9rem, 1.2vw, 1rem);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-1);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Auth Buttons in Nav */
+        .nav-auth {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-nav {
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-nav-login {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-nav-login:hover {
+            background: var(--glass-bg);
+            border-color: var(--primary-color);
+        }
+
+        .btn-nav-register {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-nav-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* ==========================================
+           HERO SECTION - App Showcase
+           ========================================== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8rem 5% 4rem;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text {
+            text-align: left;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
+        }
+
+        .hero-apps {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .app-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .app-badge i {
+            font-size: 1.2rem;
+        }
+
+        .app-badge.trading i { color: var(--success); }
+        .app-badge.budget i { color: var(--accent-color); }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 1rem 2.5rem;
+            background: var(--gradient-1);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 1.2vw, 1rem);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2.5rem;
+            background: transparent;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 1.2vw, 1rem);
+            border: 2px solid var(--glass-border);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-bg);
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Hero Visual - Dashboard Preview */
+        .hero-visual {
+            position: relative;
+        }
+
+        .dashboard-preview {
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
+
+        .dashboard-preview:hover {
+            transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+        }
+
+        .preview-header {
+            background: var(--gradient-1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .preview-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .preview-dot:nth-child(1) { background: #ef4444; }
+        .preview-dot:nth-child(2) { background: #f59e0b; }
+        .preview-dot:nth-child(3) { background: #10b981; }
+
+        .preview-content {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .preview-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .preview-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .preview-card-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .preview-chart {
+            grid-column: 1 / -1;
+            height: 100px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-end;
+            padding: 1rem;
+            gap: 0.5rem;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--gradient-1);
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+
+        /* Floating Elements */
+        .floating-stats {
+            position: absolute;
+            bottom: -20px;
+            left: -30px;
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(20px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-stats:nth-child(2) {
+            top: 20%;
+            right: -40px;
+            left: auto;
+            bottom: auto;
+            animation-delay: -3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* ==========================================
+           FEATURES SECTION - App Capabilities
+           ========================================== */
+        section {
+            padding: 6rem 5%;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--accent-color);
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Two Apps Grid */
+        .apps-showcase {
+            background: var(--gradient-2);
+            position: relative;
+        }
+
+        .apps-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .app-card:hover::before {
+            opacity: 1;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .app-icon-large {
+            width: 80px;
+            height: 80px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .app-card:nth-child(1) .app-icon-large { color: var(--success); }
+        .app-card:nth-child(2) .app-icon-large { color: var(--accent-color); }
+
+        .app-card:hover .app-icon-large {
+            background: var(--gradient-1);
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .app-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .app-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list-compact {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .feature-list-compact li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .feature-list-compact i {
+            color: var(--success);
+            font-size: 1rem;
+        }
+
+        .app-card:nth-child(2) .feature-list-compact i {
+            color: var(--accent-color);
+        }
+
+        .btn-app {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-trading {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-trading:hover {
+            background: var(--success);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-budget {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-budget:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================
+           STATS SECTION
+           ========================================== */
+        .stats-section {
+            background: var(--dark-bg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .stat-card-large {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-large:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon-large {
+            width: 60px;
+            height: 60px;
+            background: var(--glass-bg);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .stat-number-large {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label-large {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* ==========================================
+           HOW IT WORKS
+           ========================================== */
+        .how-it-works {
+            background: var(--gradient-2);
+            position: relative;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .step-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .step-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Connector lines for desktop */
+        .step-card:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50px;
+            right: -2rem;
+            width: 2rem;
+            height: 2px;
+            background: var(--gradient-1);
+            opacity: 0.3;
+        }
+
+        /* ==========================================
+           CTA SECTION
+           ========================================== */
+        .cta-section {
+            background: var(--dark-bg);
+            text-align: center;
+        }
+
+        .cta-box {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 4rem;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+        }
+
+        .cta-box h2 {
+            font-size: clamp(1.75rem, 3vw, 2.5rem);
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==========================================
+           FOOTER
+           ========================================== */
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 5% 1.5rem;
+        }
+
+        .footer-content {
+            max-width: 230px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            background: var(--gradient-1);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ==========================================
+           MOBILE NAV & RESPONSIVE
+           ========================================== */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 400px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            z-index: 1001;
+            padding: 6rem 2rem 2rem;
+            transition: right 0.3s ease;
+            border-left: 1px solid var(--glass-border);
+        }
+
+        .mobile-nav.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mobile-nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-links a:hover {
+            background: var(--glass-bg);
+            color: var(--primary-color);
+        }
+
+        .mobile-nav-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .close-menu {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-auth {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Scroll to Top */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 3rem;
+            }
+
+            .hero-text {
+                text-align: center;
+            }
+
+            .hero-apps {
                 justify-content: center;
-                align-items: center;
+            }
+
+            .cta-group {
+                justify-content: center;
+            }
+
+            .hero-visual {
+                order: -1;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-card:not(:last-child)::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-box {
+                padding: 2rem;
+            }
+
+            .footer-content {
                 flex-direction: column;
-                box-shadow: 0 5px 25px rgba(1, 1, 1, 0.15);
-                transition: 0.3s ease;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            html {
+                font-size: 14px;
             }
 
-            header .navigation a{
-                color: black;
-                font-size: 1.2em;
-                margin: 10px;
-                padding: 10px 40px;
-                border-radius: 5px;
+            .hero {
+                padding: 7rem 5% 3rem;
             }
 
-            header .navigation a:hover{
-                background-color: rgb(216, 191, 216);
-                color: white;
-                transition: 0.3s ease;
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                justify-content: center;
             }
 
-            .menu-btn{
-                position: absolute;
-                background-image: url(Image/menu.png);
-                background-position: center;
-                background-size: 30px;
-                background-repeat: no-repeat;
-                width: 40px;
-                height: 40px;
-                right: 0;
-                margin: 0 20px;
-                cursor: pointer;
-                transition: 0.3s ease;
+            .preview-content {
+                grid-template-columns: 1fr;
             }
 
-            .menu-btn.active{
-                z-index: 999;
-                background-image: url(Image/close.png);
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 25px;
-                transition: 0.3s ease;
-                filter: invert(1);
+            .floating-stats {
+                display: none;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            html {
+                font-size: 18px;
             }
 
-            section{ padding: 80px 20px; }
-            .main .content h2{ font-size: 1em; }
-            .animated-text h3{ font-size: 2.2em; }
-            .section-title{ font-size: 1.8em; }
-            .about .content{ flex-direction: column; }
-            .about .content .column{ width: 100%; position: relative; }
-            .about .content .col-right{ margin-top: 40px; }
-            .skills .content{ flex-direction: column; }
-            .skills .content .column{ position: relative; width: 100%; }
-            .skills .content .col-right{ margin-top: 40px; }
-            .contact-form{ padding: 35px 40px; }
+            .container {
+                max-width: 1600px;
+            }
+
+            section {
+                padding: 8rem 10%;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
     </style>
 </head>
 <body>
-    <section class="main" id="main">
-        <div class="content">
-            <h2 data-aos="fade-right" data-aos-duration="1000" data-aos-delay="800">Manage<br><span>Your Finances Here</span></h2>
-            <div class="animated-text" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="900">
-                <h3>History</h3>
-                <h3>Expenditure</h3>
-                <h3>Income</h3>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-wallet"></i>
+                MoneyManage
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#apps">Apps</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li class="nav-auth">
+                    <a href="login.html" class="btn-nav btn-nav-login">Sign In</a>
+                    <a href="register.html" class="btn-nav btn-nav-register">Create Account</a>
+                </li>
+            </ul>
+            <button class="mobile-menu-btn" onclick="toggleMobileNav()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav-overlay" onclick="toggleMobileNav()"></div>
+    <div class="mobile-nav" id="mobileNav">
+        <button class="close-menu" onclick="toggleMobileNav()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <ul class="mobile-nav-links">
+            <li><a href="#home" onclick="toggleMobileNav()"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="#apps" onclick="toggleMobileNav()"><i class="fa-solid fa-layer-group"></i> Apps</a></li>
+            <li><a href="#features" onclick="toggleMobileNav()"><i class="fa-solid fa-star"></i> Features</a></li>
+            <li><a href="#how-it-works" onclick="toggleMobileNav()"><i class="fa-solid fa-route"></i> How It Works</a></li>
+        </ul>
+        <div class="mobile-auth">
+            <a href="login.html" class="btn-primary" style="width: 100%; justify-content: center;">Sign In</a>
+            <a href="register.html" class="btn-secondary" style="width: 100%; justify-content: center;">Create Account</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="hero-content" data-aos="fade-up">
+            <div class="hero-text">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-sparkles"></i>
+                    2-in-1 Financial Platform
+                </div>
+                <h1>Master Your <span>Trading & Budget</span></h1>
+                <p class="hero-description">
+                    Professional trading journal meets intelligent budget management. 
+                    Track your trades, manage accounts, set financial goals, and grow your wealth—all in one powerful dashboard.
+                </p>
+                <div class="hero-apps">
+                    <div class="app-badge trading">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Trading Journal</span>
+                    </div>
+                    <div class="app-badge budget">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span>Budget Manager</span>
+                    </div>
+                </div>
+                <div class="cta-group">
+                    <a href="register.html" class="btn-primary">
+                        Get Started Free <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="#apps" class="btn-secondary">
+                        Explore Features <i class="fa-solid fa-chevron-down"></i>
+                    </a>
+                </div>
             </div>
-            <a href="login.html" class="btn" data-aos="zoom-out" data-aos-duration="1000" data-aos-delay="1000">Log In</a>
+            <div class="hero-visual">
+                <div class="dashboard-preview">
+                    <div class="preview-header">
+                        <div class="preview-dots">
+                            <div class="preview-dot"></div>
+                            <div class="preview-dot"></div>
+                            <div class="preview-dot"></div>
+                        </div>
+                        <span style="color: white; font-size: 0.9rem; font-weight: 500;">Dashboard Preview</span>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-card">
+                            <div class="preview-card-header">
+                                <i class="fa-solid fa-trophy" style="color: var(--success);"></i>
+                                Win Rate
+                            </div>
+                            <div class="preview-card-value" style="color: var(--success);">68.5%</div>
+                        </div>
+                        <div class="preview-card">
+                            <div class="preview-card-header">
+                                <i class="fa-solid fa-wallet" style="color: var(--accent-color);"></i>
+                                Balance
+                            </div>
+                            <div class="preview-card-value" style="color: var(--accent-color);">$12,450</div>
+                        </div>
+                        <div class="preview-chart">
+                            <div class="chart-bar" style="height: 40%;"></div>
+                            <div class="chart-bar" style="height: 70%;"></div>
+                            <div class="chart-bar" style="height: 55%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 90%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-stats">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Total P&L</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">+$3,240</div>
+                </div>
+                <div class="floating-stats">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Monthly Savings</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color);">85%</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="about" id="about">
-        <div class="title reveal">
-            <h2 class="section-title" data-aos="fade-up" data-aos-duration="1000">About</h2>
-        </div>
-        <div class="content">
-            <div class="column col-left reveal">
-                <div class="img-card" data-aos="fade-right" data-aos-duration="2000" data-aos-delay="200">
-                    <img src="Image/abaout.jpg" alt="Finances">
-                </div>
+    <!-- Apps Showcase Section -->
+    <section class="apps-showcase" id="apps">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-tag">Dual Platform</span>
+                <h2 class="section-title">Two Powerful Apps, One Account</h2>
+                <p class="section-subtitle">Seamlessly switch between trading analysis and budget management</p>
             </div>
-            <div class="column col-right reveal">
-                <h2 class="content-title" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">Money Management</h2>
-                <p class="paragraph-text" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="400">Money management is the practice of planning and controlling your income and expenses to achieve financial goals. It involves budgeting, saving regularly, and avoiding unnecessary debt to build long-term stability. Smart money management helps you stay secure, reduce stress, and grow wealth over time.</p>
-                <a href="#services" class="btn" data-aos="zoom-out-left" data-aos-duration="1000" data-aos-delay="600">Next</a>
+            <div class="apps-grid">
+                <!-- Trading Journal Card -->
+                <div class="app-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="app-icon-large">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3>Trading Journal</h3>
+                    <p>Professional trade tracking with advanced analytics. Record every trade, analyze performance, and improve your strategy with data-driven insights.</p>
+                    <ul class="feature-list-compact">
+                        <li><i class="fa-solid fa-check"></i> Trade history with screenshots</li>
+                        <li><i class="fa-solid fa-check"></i> Win rate & P&L analytics</li>
+                        <li><i class="fa-solid fa-check"></i> Risk:Reward tracking</li>
+                        <li><i class="fa-solid fa-check"></i> Calendar view of trades</li>
+                        <li><i class="fa-solid fa-check"></i> Symbol performance charts</li>
+                    </ul>
+                    <a href="register.html" class="btn-app btn-trading">Start Trading Journal</a>
+                </div>
+
+                <!-- Budget Manager Card -->
+                <div class="app-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="app-icon-large">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <h3>Budget Manager</h3>
+                    <p>Intelligent financial management across multiple accounts. Track income, expenses, transfers, and achieve your savings goals with visual progress tracking.</p>
+                    <ul class="feature-list-compact">
+                        <li><i class="fa-solid fa-check"></i> Multi-account management</li>
+                        <li><i class="fa-solid fa-check"></i> Income & expense calendar</li>
+                        <li><i class="fa-solid fa-check"></i> Financial goals tracking</li>
+                        <li><i class="fa-solid fa-check"></i> IDR & USD currency support</li>
+                        <li><i class="fa-solid fa-check"></i> Transfer between accounts</li>
+                    </ul>
+                    <a href="register.html" class="btn-app btn-budget">Start Budget Manager</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="services" id="services">
-        <div class="title">
-            <h2 class="section-title" data-aos="fade-up" data-aos-duration="1000">Three Pillars</h2>
-        </div>
-        <div class="content">
-            <div class="card" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="400">
-                <div class="service-icon">
-                   <i class="fa-solid fa-building-columns"></i>
-                </div>
-                <div class="info">
-                    <h3>Investing</h3>
-                    <p>Investing means allocating funds today to generate returns in the future, rather than simply keeping money idle—so your money works for you.</p>
-                </div>
+    <!-- Stats Section -->
+    <section class="stats-section" id="features">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-tag">Platform Stats</span>
+                <h2 class="section-title">Trusted by Traders & Savers</h2>
+                <p class="section-subtitle">Join thousands managing their finances smarter</p>
             </div>
-            <div class="card" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
-                <div class="service-icon">
-                    <i class="fa-solid fa-arrow-trend-up"></i>
+            <div class="stats-grid" data-aos="fade-up">
+                <div class="stat-card-large">
+                        <div class="stat-icon-large">
+                        <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-number-large" id="activeUsersCount">0</div> <!-- Tambah ID -->
+                        <div class="stat-label-large">Active Users</div>
                 </div>
-                <div class="info">
-                    <h3>Income</h3>
-                    <p>Income is the money you receive regularly, such as salary, bonuses, freelance payments, or government allowances, to support your daily needs and lifestyle.</p>
+                <div class="stat-card-large">
+                    <div class="stat-icon-large">
+                        <i class="fa-solid fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-number-large">50K+</div>
+                    <div class="stat-label-large">Trades Recorded</div>
                 </div>
-            </div>
-            <div class="card" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="400">
-                <div class="service-icon">
-                    <i class="fa-solid fa-arrow-trend-down"></i>
+                <div class="stat-card-large">
+                    <div class="stat-icon-large">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-number-large">$5M+</div>
+                    <div class="stat-label-large">Budget Managed</div>
                 </div>
-                <div class="info">
-                    <h3>Expenditure</h3>
-                    <p>Expenditure is the money you spend on goods and services to meet your daily needs, such as food, transportation, rent, utilities, and entertainment.</p>
+                <div class="stat-card-large">
+                    <div class="stat-icon-large">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="stat-number-large">4.9/5</div>
+                    <div class="stat-label-large">User Rating</div>
                 </div>
             </div>
         </div>
     </section>
-  
-    <footer class="footer">
-        <span class="footer-title">AmethystFiz</span>
-        <p>Copyright @2025 <a href="https://linktr.ee/AmethystFiz">Portofolio Hafiz</a>. All Rights Reserved.</p>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-tag">Getting Started</span>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Start managing your finances in three simple steps</p>
+            </div>
+            <div class="steps-grid" data-aos="fade-up">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up in seconds with your email. No credit card required. Get instant access to both Trading Journal and Budget Manager.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Setup Your Dashboard</h3>
+                    <p>Add your trading accounts or budget accounts. Set your base currency (IDR or USD) and configure your financial goals.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Track & Grow</h3>
+                    <p>Record trades or transactions, visualize your progress with beautiful charts, and make smarter financial decisions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container" data-aos="fade-up">
+            <div class="cta-box">
+                <h2>Ready to Take Control?</h2>
+                <p>Join thousands of traders and budget-conscious individuals who trust MoneyManage for their financial journey.</p>
+                <div class="cta-buttons">
+                    <a href="register.html" class="btn-primary">
+                        <i class="fa-solid fa-user-plus"></i> Create Free Account
+                    </a>
+                    <a href="login.html" class="btn-secondary">
+                        <i class="fa-solid fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="fa-solid fa-wallet"></i>
+                MoneyManage
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 <a href="https://linktr.ee/AmethystFiz" style="color: var(--primary-color); text-decoration: none;">AmethystFiz</a>. All rights reserved. Built for financial freedom.</p>
+        </div>
     </footer>
 
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" id="scrollTop" onclick="scrollToTop()">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-      AOS.init({offset:0});
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile navigation toggle
+        function toggleMobileNav() {
+            const mobileNav = document.getElementById('mobileNav');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            mobileNav.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Scroll to top button
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+// ==========================================
+// ACTIVE USERS FROM SUPABASE
+// ==========================================
+
+const SUPABASE_URL = 'https://bidhhwcuhisuptgonyfd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpZGhod2N1aGlzdXB0Z29ueWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTgxNDksImV4cCI6MjA4Njg3NDE0OX0.fb7FGMAEOHhyYpsTpzJ9ZGZpwQaA8INnHtq9NiHqCwU';
+
+// Tunggu DOM siap
+document.addEventListener('DOMContentLoaded', async function() {
+    
+    // Cek apakah Supabase library ada
+    if (typeof supabase === 'undefined') {
+        console.error('Supabase library tidak ditemukan!');
+        return;
+    }
+    
+    try {
+        // Buat client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Ambil jumlah user
+        const { count, error } = await supabaseClient
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+
+        if (error) {
+            console.error('Error:', error);
+            return;
+        }
+        
+        console.log('Jumlah user:', count); // Debug
+        
+        // Update tampilan
+        updateActiveUsers(count || 1);
+        
+    } catch (err) {
+        console.error('Error:', err);
+    }
+});
+
+// Fungsi update tampilan
+function updateActiveUsers(targetNumber) {
+    // Cari elemen dengan ID
+    let el = document.getElementById('activeUsersCount');
+    
+    // Kalau tidak ada ID, cari yang pertama dengan class
+    if (!el) {
+        const cards = document.querySelectorAll('.stat-card-large');
+        for (let card of cards) {
+            const icon = card.querySelector('.fa-users');
+            if (icon) {
+                el = card.querySelector('.stat-number-large');
+                break;
+            }
+        }
+    }
+    
+    if (!el) {
+        console.error('Elemen Active Users tidak ditemukan!');
+        return;
+    }
+    
+    console.log('Elemen ditemukan:', el); // Debug
+    console.log('Target angka:', targetNumber); // Debug
+    
+    // Animasi angka
+    animateNumber(el, 0, targetNumber, 1000);
+}
+
+// Fungsi animasi
+function animateNumber(element, start, end, duration) {
+    const range = end - start;
+    const stepTime = Math.max(Math.abs(Math.floor(duration / range)), 50);
+    let current = start;
+    
+    const timer = setInterval(function() {
+        current++;
+        element.textContent = current;
+        
+        if (current >= end) {
+            clearInterval(timer);
+        }
+    }, stepTime);
+}
     </script>
-    <script src="script.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="dark-theme">
+<html lang="en" class="dark-theme">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,26 +15,39 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        /* ==========================================
+           MODERN THEME VARIABLES - Selaras dengan Index
+           ========================================== */
         :root {
-            --bg-primary: #0a0b0e;
-            --bg-secondary: #12141a;
-            --bg-tertiary: #1a1d25;
-            --bg-hover: #252836;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a3bd;
-            --text-tertiary: #6c757d;
-            --accent-primary: #6d5acd;
-            --accent-secondary: #4361ee;
-            --danger: #ff4757;
-            --success: #2ed573;
-            --warning: #ffa502;
-            --info: #3498db;
-            --border-color: #2a2d3a;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --neon-glow: 0 0 20px rgba(109, 90, 205, 0.3);
+            /* Warna dasar dari index.html */
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --dark-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #64748b;
+            
+            /* Gradient & Effects */
+            --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            --gradient-2: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+            
+            /* Status Colors */
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #06b6d4;
+            
             --transition-speed: 0.3s;
         }
 
+        /* Light theme tetap ada tapi jarang dipakai */
         .light-theme {
             --bg-primary: #f8f9fa;
             --bg-secondary: #ffffff;
@@ -51,25 +64,25 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background: var(--bg-primary);
+            background: var(--dark-bg);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
             transition: all var(--transition-speed);
         }
 
-        /* Loading Screen */
+        /* Loading Screen - Modernized */
         #loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--bg-primary);
+            background: var(--dark-bg);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -81,16 +94,18 @@
         .loader {
             width: 60px;
             height: 60px;
-            border: 4px solid var(--bg-tertiary);
-            border-top-color: var(--accent-primary);
+            border: 4px solid var(--glass-bg);
+            border-top-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            box-shadow: var(--shadow-glow);
         }
 
         .loading-text {
             margin-top: 20px;
             color: var(--text-secondary);
             font-size: 1.1rem;
+            font-weight: 500;
         }
 
         @keyframes spin {
@@ -103,17 +118,17 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* Sidebar - Modern Glassmorphism */
         .sidebar {
             width: 280px;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 1.5rem;
             position: fixed;
             height: 100vh;
             transition: all var(--transition-speed);
             z-index: 100;
-            box-shadow: var(--card-shadow);
-            border-right: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            border-right: 1px solid var(--glass-border);
         }
 
         .logo {
@@ -125,26 +140,28 @@
             cursor: pointer;
         }
 
+        /* Logo Icon dengan Gradient */
         .logo-icon {
             width: 45px;
             height: 45px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             color: white;
-            box-shadow: var(--neon-glow);
+            box-shadow: var(--shadow-glow);
         }
 
+        /* Logo Text dengan Gradient */
         .logo span {
             font-size: 1.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            background-clip: text;
+            font-weight: 800;
+            background: var(--gradient-1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav-links {
@@ -152,6 +169,7 @@
             margin-top: 1rem;
         }
 
+        /* Nav Items - Modern Hover Effects */
         .nav-links li {
             position: relative;
             padding: 1rem 1.2rem;
@@ -163,39 +181,35 @@
             gap: 1rem;
             transition: all var(--transition-speed);
             color: var(--text-secondary);
+            border: 1px solid transparent;
         }
 
-        .nav-links li:hover,
-        .nav-links li.active {
-            background: var(--bg-tertiary);
+        .nav-links li:hover {
+            background: var(--glass-bg);
             color: var(--text-primary);
+            border-color: var(--glass-border);
         }
 
         .nav-links li.active {
-            background: linear-gradient(135deg, rgba(109, 90, 205, 0.2), rgba(67, 97, 238, 0.2));
-            border: 1px solid rgba(109, 90, 205, 0.3);
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: var(--shadow-glow);
+            border-color: transparent;
         }
 
         .nav-links li i {
             font-size: 1.2rem;
             width: 24px;
             text-align: center;
+            transition: all var(--transition-speed);
+        }
+
+        .nav-links li.active i {
+            transform: scale(1.1);
         }
 
         .nav-indicator {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 0;
-            background: var(--accent-primary);
-            border-radius: 0 4px 4px 0;
-            transition: height var(--transition-speed);
-        }
-
-        .nav-links li.active .nav-indicator {
-            height: 30px;
+            display: none; /* Sembunyikan indicator lama, gunakan background gradient saja */
         }
 
         /* Main Content */
@@ -206,16 +220,18 @@
             min-height: 100vh;
         }
 
+        /* Header - Modern Glassmorphism */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1.2rem 1.5rem;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             border-radius: 16px;
             margin-bottom: 2rem;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
         }
 
         .header-left {
@@ -224,35 +240,37 @@
             gap: 1rem;
         }
 
+        /* App Switcher - Modern */
         .app-switcher {
             display: flex;
             align-items: center;
             gap: 0.8rem;
             padding: 0.5rem 1rem;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
         }
 
         .app-switcher span {
             font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-secondary);
+            transition: all var(--transition-speed);
         }
 
         .app-switcher span.active {
-            color: var(--accent-primary);
+            color: var(--primary-color);
         }
 
         .switch-btn {
             width: 50px;
             height: 26px;
-            background: var(--bg-secondary);
+            background: var(--glass-bg);
             border-radius: 13px;
             position: relative;
             cursor: pointer;
-            border: 2px solid var(--accent-primary);
-            transition: all 0.3s;
+            border: 2px solid var(--primary-color);
+            transition: all var(--transition-speed);
         }
 
         .switch-btn::after {
@@ -260,11 +278,12 @@
             position: absolute;
             width: 18px;
             height: 18px;
-            background: var(--accent-primary);
+            background: var(--primary-color);
             border-radius: 50%;
             top: 2px;
             left: 2px;
-            transition: all 0.3s;
+            transition: all var(--transition-speed);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
         }
 
         .switch-btn.budget::after {
@@ -274,17 +293,17 @@
         .search-bar {
             display: flex;
             align-items: center;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             padding: 0.8rem 1.2rem;
             border-radius: 12px;
             width: 320px;
-            border: 1px solid transparent;
+            border: 1px solid var(--glass-border);
             transition: all var(--transition-speed);
         }
 
         .search-bar:focus-within {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(109, 90, 205, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
         .search-bar input {
@@ -307,7 +326,7 @@
             gap: 1.5rem;
         }
 
-        /* Profile */
+        /* Profile - Modern */
         .profile {
             position: relative;
         }
@@ -317,22 +336,22 @@
             align-items: center;
             gap: 0.8rem;
             padding: 0.5rem 1rem;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border-radius: 12px;
             cursor: pointer;
             transition: all var(--transition-speed);
-            border: 1px solid transparent;
+            border: 1px solid var(--glass-border);
         }
 
         .profile-trigger:hover {
-            border-color: var(--accent-primary);
-            box-shadow: var(--neon-glow);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-glow);
         }
 
         .profile-avatar {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -350,6 +369,7 @@
         .profile-name {
             font-weight: 600;
             font-size: 0.9rem;
+            color: var(--text-primary);
         }
 
         .profile-role {
@@ -362,15 +382,17 @@
             top: calc(100% + 10px);
             right: 0;
             width: 280px;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
             z-index: 1000;
+            backdrop-filter: blur(20px);
+            overflow: hidden;
         }
 
         .profile-dropdown.active {
@@ -384,13 +406,13 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            background: linear-gradient(135deg, rgba(109, 90, 205, 0.1), rgba(67, 97, 238, 0.1));
+            background: var(--gradient-1);
         }
 
         .header-avatar {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -398,21 +420,23 @@
             color: white;
             font-weight: 600;
             font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .header-info h4 {
             margin: 0;
             font-size: 1rem;
+            color: white;
         }
 
         .header-info span {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .dropdown-divider {
             height: 1px;
-            background: var(--border-color);
+            background: var(--glass-border);
             margin: 0.5rem 0;
         }
 
@@ -429,18 +453,18 @@
             gap: 0.8rem;
             cursor: pointer;
             transition: all var(--transition-speed);
-            color: var(--text-secondary);
+            color: #fffbfb
         }
 
         .dropdown-menu li:hover {
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             color: var(--text-primary);
             transform: translateX(5px);
         }
 
         .dropdown-menu li i {
             width: 20px;
-            color: var(--accent-primary);
+            color: var(--primary-color);
         }
 
         .dropdown-menu li.logout {
@@ -477,16 +501,17 @@
         .calendar-header h2 {
             font-size: 1.5rem;
             font-weight: 700;
+            color: var(--text-primary);
         }
 
         .month-nav {
             display: flex;
             align-items: center;
             gap: 1rem;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 0.5rem 1rem;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
         }
 
         .month-nav button {
@@ -500,7 +525,7 @@
         }
 
         .month-nav button:hover {
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             color: var(--text-primary);
         }
 
@@ -508,6 +533,7 @@
             font-weight: 600;
             min-width: 150px;
             text-align: center;
+            color: var(--text-primary);
         }
 
         .summary-cards {
@@ -518,11 +544,17 @@
         }
 
         .summary-card {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-speed);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
         }
 
         .summary-card h3 {
@@ -546,10 +578,11 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 0.5rem;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 16px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
         }
 
         .day-header {
@@ -562,7 +595,7 @@
 
         .calendar-day {
             aspect-ratio: 1;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border-radius: 12px;
             padding: 0.5rem;
             cursor: pointer;
@@ -573,8 +606,9 @@
         }
 
         .calendar-day:hover {
-            border-color: var(--accent-primary);
+            border-color: var(--primary-color);
             transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .calendar-day.other-month {
@@ -582,27 +616,29 @@
         }
 
         .calendar-day.today {
-            border-color: var(--accent-primary);
-            background: rgba(109, 90, 205, 0.1);
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: var(--shadow-glow);
         }
 
         .day-number {
             font-weight: 600;
             font-size: 0.9rem;
             margin-bottom: 0.3rem;
+            color: var(--text-primary);
         }
 
         .day-transactions {
             display: flex;
             flex-direction: column;
             gap: 2px;
-            font-size: 0.7rem;
+            font-size: 1rem;
         }
 
         .day-income { color: var(--success); }
         .day-expense { color: var(--danger); }
 
-        /* Floating Action Button */
+        /* Floating Action Button - Modern */
         .fab-container {
             position: fixed;
             bottom: 2rem;
@@ -613,21 +649,39 @@
         .fab-main {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             border-radius: 50%;
             border: none;
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
-            box-shadow: var(--neon-glow);
+            box-shadow: var(--shadow-glow);
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fab-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .fab-main:hover::before {
+            left: 100%;
         }
 
         .fab-main:hover {
             transform: scale(1.1);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
         }
 
         .fab-menu {
@@ -653,19 +707,20 @@
             display: flex;
             align-items: center;
             gap: 0.8rem;
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 0.8rem 1.2rem;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
-            box-shadow: var(--card-shadow);
+            box-shadow: var(--shadow-lg);
         }
 
         .fab-item:hover {
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             transform: translateX(-5px);
+            border-color: var(--primary-color);
         }
 
         .fab-item i {
@@ -677,9 +732,9 @@
             border-radius: 6px;
         }
 
-        .fab-item.income i { background: rgba(46, 213, 115, 0.2); color: var(--success); }
-        .fab-item.expense i { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
-        .fab-item.transfer i { background: rgba(52, 152, 219, 0.2); color: var(--info); }
+        .fab-item.income i { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .fab-item.expense i { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .fab-item.transfer i { background: rgba(6, 182, 212, 0.2); color: var(--info); }
 
         /* Accounts Section */
         .accounts-header {
@@ -692,31 +747,52 @@
         .accounts-header h2 {
             font-size: 1.5rem;
             font-weight: 700;
+            color: var(--text-primary);
         }
 
         .total-balance-card {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             padding: 2rem;
             border-radius: 20px;
             margin-bottom: 2rem;
-            box-shadow: var(--neon-glow);
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .total-balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .total-balance-card h3 {
             font-size: 1rem;
             opacity: 0.9;
             margin-bottom: 0.5rem;
+            color: white;
+            position: relative;
+            z-index: 1;
         }
 
         .total-balance-card .amount {
             font-size: 2.5rem;
             font-weight: 700;
+            color: white;
+            position: relative;
+            z-index: 1;
         }
 
         .total-balance-card .currency-toggle {
             display: flex;
             gap: 1rem;
             margin-top: 1rem;
+            position: relative;
+            z-index: 1;
         }
 
         .currency-btn {
@@ -732,7 +808,7 @@
 
         .currency-btn.active {
             background: white;
-            color: var(--accent-primary);
+            color: var(--primary-color);
         }
 
         .accounts-grid {
@@ -742,24 +818,25 @@
         }
 
         .chart-container {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
         }
 
         .chart-container h3 {
             margin-bottom: 1rem;
             font-size: 1.1rem;
+            color: var(--text-primary);
         }
 
         .accounts-list {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             padding: 1.5rem;
             border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
             max-height: 500px;
             overflow-y: auto;
         }
@@ -767,6 +844,7 @@
         .accounts-list h3 {
             margin-bottom: 1rem;
             font-size: 1.1rem;
+            color: var(--text-primary);
         }
 
         .account-item {
@@ -774,16 +852,18 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border-radius: 12px;
             margin-bottom: 0.8rem;
             transition: all 0.2s;
             cursor: pointer;
+            border: 1px solid transparent;
         }
 
         .account-item:hover {
             transform: translateX(5px);
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--glass-border);
         }
 
         .account-icon {
@@ -804,6 +884,7 @@
         .account-name {
             font-weight: 600;
             margin-bottom: 0.2rem;
+            color: var(--text-primary);
         }
 
         .account-type {
@@ -818,6 +899,7 @@
         .account-balance .amount {
             font-weight: 700;
             font-size: 1.1rem;
+            color: var(--text-primary);
         }
 
         .account-balance .currency {
@@ -829,9 +911,9 @@
             width: 100%;
             padding: 1rem;
             background: transparent;
-            border: 2px dashed var(--accent-primary);
+            border: 2px dashed var(--primary-color);
             border-radius: 12px;
-            color: var(--accent-primary);
+            color: var(--primary-color);
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
@@ -842,7 +924,7 @@
         }
 
         .add-account-btn:hover {
-            background: rgba(109, 90, 205, 0.1);
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .empty-accounts {
@@ -855,6 +937,7 @@
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.5;
+            color: var(--primary-color);
         }
 
         .empty-accounts p {
@@ -862,7 +945,7 @@
         }
 
         .create-first-account {
-            color: var(--accent-primary);
+            color: var(--primary-color);
             cursor: pointer;
             font-weight: 600;
         }
@@ -875,18 +958,42 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Primary Button dengan Gradient */
         .btn-add-goal {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             color: white;
             border: none;
             padding: 0.9rem 1.5rem;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             transition: all var(--transition-speed);
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-add-goal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-add-goal:hover::before {
+            left: 100%;
+        }
+
+        .btn-add-goal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
         }
 
         .goals-grid {
@@ -896,17 +1003,17 @@
         }
 
         .goal-card {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
             transition: all var(--transition-speed);
         }
 
         .goal-card:hover {
             transform: translateY(-5px);
-            border-color: var(--accent-primary);
+            border-color: var(--primary-color);
         }
 
         .goal-header {
@@ -919,12 +1026,14 @@
         .goal-header h3 {
             font-size: 1.1rem;
             font-weight: 600;
+            color: var(--text-primary);
         }
 
         .goal-amount {
             font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
+            color: var(--text-primary);
         }
 
         .goal-progress {
@@ -934,14 +1043,14 @@
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border-radius: 4px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             border-radius: 4px;
             transition: width 0.5s ease;
         }
@@ -967,9 +1076,19 @@
             color: white;
         }
 
+        .btn-add-fund:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
         .btn-withdraw {
             background: var(--danger);
             color: white;
+        }
+
+        .btn-withdraw:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
         }
 
         /* Settings Section */
@@ -980,11 +1099,11 @@
         }
 
         .settings-card {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
         }
 
         .settings-card h3 {
@@ -993,6 +1112,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            color: var(--text-primary);
         }
 
         .setting-option {
@@ -1000,7 +1120,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1.2rem 0;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .setting-option:last-child {
@@ -1010,6 +1130,7 @@
         .setting-info h4 {
             font-size: 1rem;
             margin-bottom: 0.3rem;
+            color: var(--text-primary);
         }
 
         .setting-info p {
@@ -1017,7 +1138,7 @@
             color: var(--text-secondary);
         }
 
-        /* Switch */
+        /* Switch - Modern */
         .switch {
             position: relative;
             display: inline-block;
@@ -1038,9 +1159,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: var(--bg-tertiary);
+            background-color: var(--glass-bg);
             transition: .4s;
             border-radius: 34px;
+            border: 1px solid var(--glass-border);
         }
 
         .slider:before {
@@ -1048,22 +1170,23 @@
             content: "";
             height: 20px;
             width: 20px;
-            left: 3px;
-            bottom: 3px;
+            left: 2px;
+            bottom: 2px;
             background-color: var(--text-primary);
             transition: .4s;
             border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: var(--accent-primary);
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
         input:checked + .slider:before {
             transform: translateX(24px);
         }
 
-        /* Modal */
+        /* Modal - Modern Glassmorphism */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1084,18 +1207,19 @@
         }
 
         .modal {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
             border-radius: 20px;
             width: 100%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
         }
 
         .modal-header {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             color: white;
             padding: 1.5rem 2rem;
             display: flex;
@@ -1127,6 +1251,7 @@
 
         .btn-close:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
 
         .modal-body {
@@ -1152,8 +1277,8 @@
         .form-group textarea {
             width: 100%;
             padding: 0.9rem;
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
             border-radius: 10px;
             color: var(--text-primary);
             font-size: 0.95rem;
@@ -1164,8 +1289,14 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(109, 90, 205, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group select option {
+            background: var(--card-bg);
+             color: var(--text-primary);
+            padding: 0.5rem;
         }
 
         .form-row {
@@ -1191,7 +1322,7 @@
 
         .color-option.selected {
             border-color: white;
-            box-shadow: 0 0 0 2px var(--accent-primary);
+            box-shadow: 0 0 0 2px var(--primary-color);
         }
 
         .icon-picker {
@@ -1208,7 +1339,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border: 2px solid transparent;
             transition: all 0.2s;
             color: var(--text-secondary);
@@ -1216,23 +1347,23 @@
 
         .icon-option:hover,
         .icon-option.selected {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
 
         .modal-footer {
             padding: 1.5rem 2rem;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid var(--glass-border);
         }
 
         .btn-cancel {
             background: transparent;
             color: var(--text-secondary);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
             padding: 0.9rem 1.5rem;
             border-radius: 10px;
             cursor: pointer;
@@ -1241,12 +1372,12 @@
         }
 
         .btn-cancel:hover {
-            background: var(--bg-hover);
+            background: var(--glass-bg);
             color: var(--text-primary);
         }
 
         .btn-save {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            background: var(--gradient-1);
             color: white;
             border: none;
             padding: 0.9rem 1.5rem;
@@ -1257,18 +1388,186 @@
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s;
-            box-shadow: var(--neon-glow);
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-save::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-save:hover::before {
+            left: 100%;
         }
 
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(109, 90, 205, 0.4);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
         }
 
         .btn-save:disabled {
             opacity: 0.7;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* Day Transactions Modal Styles */
+        .day-transactions-modal {
+            max-width: 450px;
+        }
+
+        .day-transactions-modal .modal-header {
+            background: var(--gradient-1);
+        }
+
+        .day-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .day-summary-item {
+            background: var(--glass-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .day-summary-item.income {
+            border-left: 4px solid var(--success);
+        }
+
+        .day-summary-item.expense {
+            border-left: 4px solid var(--danger);
+        }
+
+        .day-summary-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .day-summary-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .day-summary-item.income .day-summary-amount {
+            color: var(--success);
+        }
+
+        .day-summary-item.expense .day-summary-amount {
+            color: var(--danger);
+        }
+
+        .transactions-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .transaction-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.income {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .transaction-icon.expense {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .transaction-icon.transfer {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--info);
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-category {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .transaction-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            text-align: right;
+        }
+
+        .transaction-amount .amount {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .transaction-amount .amount.income {
+            color: var(--success);
+        }
+
+        .transaction-amount .amount.expense {
+            color: var(--danger);
+        }
+
+        .transaction-amount .currency {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .no-transactions {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .no-transactions i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
 
         /* Notifications */
@@ -1283,17 +1582,18 @@
         }
 
         .custom-notification {
-            background: var(--bg-secondary);
-            border-left: 4px solid var(--accent-primary);
+            background: var(--card-bg);
+            border-left: 4px solid var(--primary-color);
             padding: 1rem 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
             display: flex;
             align-items: center;
             gap: 12px;
             min-width: 300px;
             animation: slideIn 0.3s ease;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
         }
 
         .custom-notification.success { border-color: var(--success); }
@@ -1355,25 +1655,29 @@
                 min-height: 60px;
                 font-size: 0.8rem;
             }
+
+            .day-summary {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* Scrollbar */
+        /* Scrollbar - Modern */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: var(--card-bg);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
+            background: var(--primary-color);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-secondary);
+            background: var(--primary-dark);
         }
 
         .spinner {
@@ -1390,7 +1694,7 @@
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loader"></div>
-        <div class="loading-text">Memuat Budget Manager...</div>
+        <div class="loading-text">Loading Budget Manager...</div>
     </div>
 
     <!-- Notification Container -->
@@ -1409,12 +1713,12 @@
             <ul class="nav-links">
                 <li class="active" data-section="calendar" data-content="calendar-content">
                     <i class="fas fa-calendar-alt"></i>
-                    <span>Kalender</span>
+                    <span>Calendar</span>
                     <div class="nav-indicator"></div>
                 </li>
                 <li data-section="accounts" data-content="accounts-content">
                     <i class="fas fa-university"></i>
-                    <span>Akun</span>
+                    <span>Accounts</span>
                     <div class="nav-indicator"></div>
                 </li>
                 <li data-section="goals" data-content="goals-content">
@@ -1424,7 +1728,7 @@
                 </li>
                 <li data-section="settings" data-content="settings-content">
                     <i class="fas fa-cog"></i>
-                    <span>Pengaturan</span>
+                    <span>Settings</span>
                     <div class="nav-indicator"></div>
                 </li>
             </ul>
@@ -1437,7 +1741,7 @@
                 <div class="header-left">
                     <div class="search-bar">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Cari transaksi...">
+                        <input type="text" id="searchInput" placeholder="Search transactions...">
                     </div>
                 </div>
                 <div class="header-right">
@@ -1468,7 +1772,7 @@
                             <ul class="dropdown-menu">
                                 <li onclick="switchSection('settings', 'settings-content')">
                                     <i class="fas fa-cog"></i>
-                                    <span>Pengaturan</span>
+                                    <span>Settings</span>
                                 </li>
                                 <li>
                                     <i class="fas fa-palette"></i>
@@ -1483,7 +1787,7 @@
                             <ul class="dropdown-menu">
                                 <li class="logout" onclick="logout()">
                                     <i class="fas fa-sign-out-alt"></i>
-                                    <span>Keluar</span>
+                                    <span>Logout</span>
                                 </li>
                             </ul>
                         </div>
@@ -1494,25 +1798,25 @@
             <!-- Calendar Content -->
             <div id="calendar-content" class="content-section active">
                 <div class="calendar-header">
-                    <h2><i class="fas fa-calendar-alt"></i> Kalender Keuangan</h2>
+                    <h2><i class="fas fa-calendar-alt"></i> Budget Calendar</h2>
                     <div class="month-nav">
                         <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-                        <span id="currentMonth">Februari 2025</span>
+                        <span id="currentMonth">February 2025</span>
                         <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
 
                 <div class="summary-cards">
                     <div class="summary-card income">
-                        <h3>Pemasukan Bulan Ini</h3>
+                        <h3>Monthly Income</h3>
                         <div class="amount" id="monthIncome">Rp 0</div>
                     </div>
                     <div class="summary-card expense">
-                        <h3>Pengeluaran Bulan Ini</h3>
+                        <h3>Monthly Expense</h3>
                         <div class="amount" id="monthExpense">Rp 0</div>
                     </div>
                     <div class="summary-card balance">
-                        <h3>Saldo Bulan Ini</h3>
+                        <h3>Monthly Balance</h3>
                         <div class="amount" id="monthBalance">Rp 0</div>
                     </div>
                 </div>
@@ -1525,11 +1829,11 @@
             <!-- Accounts Content -->
             <div id="accounts-content" class="content-section">
                 <div class="accounts-header">
-                    <h2><i class="fas fa-university"></i> Manajemen Akun</h2>
+                    <h2><i class="fas fa-university"></i> Account Management</h2>
                 </div>
 
                 <div class="total-balance-card">
-                    <h3>Total Keseluruhan</h3>
+                    <h3>Total Balance</h3>
                     <div class="amount" id="totalBalance">Rp 0</div>
                     <div class="currency-toggle">
                         <button class="currency-btn active" onclick="setCurrency('IDR')">IDR</button>
@@ -1539,16 +1843,16 @@
 
                 <div class="accounts-grid">
                     <div class="chart-container">
-                        <h3>Distribusi Akun</h3>
+                        <h3>Account Distribution</h3>
                         <div id="accountsChart"></div>
                     </div>
                     <div class="accounts-list">
-                        <h3>Daftar Akun</h3>
+                        <h3>Account List</h3>
                         <div id="accountsList">
                             <!-- Accounts will be loaded here -->
                         </div>
                         <button class="add-account-btn" onclick="openAccountModal()">
-                            <i class="fas fa-plus"></i> Tambah Akun
+                            <i class="fas fa-plus"></i> Add Account
                         </button>
                     </div>
                 </div>
@@ -1558,11 +1862,11 @@
             <div id="goals-content" class="content-section">
                 <div class="goals-header">
                     <div>
-                        <h2><i class="fas fa-bullseye"></i> Goals Keuangan</h2>
-                        <p style="color: var(--text-secondary); margin-top: 0.5rem;">Kelola target tabungan Anda</p>
+                        <h2><i class="fas fa-bullseye"></i> Financial Goals</h2>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem;">Manage your savings targets</p>
                     </div>
                     <button class="btn-add-goal" onclick="openGoalModal()">
-                        <i class="fas fa-plus"></i> Tambah Goal
+                        <i class="fas fa-plus"></i> Add Goal
                     </button>
                 </div>
                 <div class="goals-grid" id="goalsGrid">
@@ -1573,16 +1877,16 @@
             <!-- Settings Content -->
             <div id="settings-content" class="content-section">
                 <div style="margin-bottom: 1.5rem;">
-                    <h2>Pengaturan</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Kustomisasi budget manager Anda</p>
+                    <h2>Settings</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Customize your budget manager</p>
                 </div>
                 <div class="settings-grid">
                     <div class="settings-card">
-                        <h3><i class="fas fa-palette"></i> Tampilan</h3>
+                        <h3><i class="fas fa-palette"></i> Appearance</h3>
                         <div class="setting-option">
                             <div class="setting-info">
-                                <h4>Mode Gelap</h4>
-                                <p>Saklar antara mode gelap dan terang</p>
+                                <h4>Dark Mode</h4>
+                                <p>Toggle between dark and light mode</p>
                             </div>
                             <label class="switch">
                                 <input type="checkbox" id="settingsThemeToggle" checked onchange="toggleTheme()">
@@ -1591,21 +1895,21 @@
                         </div>
                         <div class="setting-option">
                             <div class="setting-info">
-                                <h4>Mata Uang Default</h4>
-                                <p>Pilih mata uang utama</p>
+                                <h4>Default Currency</h4>
+                                <p>Choose your primary currency</p>
                             </div>
-                            <select id="defaultCurrency" onchange="setDefaultCurrency(this.value)" style="padding: 0.5rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <select id="defaultCurrency" onchange="setDefaultCurrency(this.value)" style="padding: 0.5rem 1rem; background: #111f41; border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
                                 <option value="IDR">IDR (Rupiah)</option>
                                 <option value="USD">USD (Dollar)</option>
                             </select>
                         </div>
                     </div>
                     <div class="settings-card">
-                        <h3><i class="fas fa-bell"></i> Notifikasi</h3>
+                        <h3><i class="fas fa-bell"></i> Notifications</h3>
                         <div class="setting-option">
                             <div class="setting-info">
-                                <h4>Notifikasi Transaksi</h4>
-                                <p>Tampilkan notifikasi saat transaksi ditambahkan</p>
+                                <h4>Transaction Notifications</h4>
+                                <p>Show notifications when transaction is added</p>
                             </div>
                             <label class="switch">
                                 <input type="checkbox" checked id="notifTransactionToggle">
@@ -1614,34 +1918,13 @@
                         </div>
                         <div class="setting-option">
                             <div class="setting-info">
-                                <h4>Reminder Goals</h4>
-                                <p>Kirim reminder untuk goals yang mendekati target</p>
+                                <h4>Goal Reminders</h4>
+                                <p>Send reminder for goals nearing target</p>
                             </div>
                             <label class="switch">
                                 <input type="checkbox" checked>
                                 <span class="slider"></span>
                             </label>
-                        </div>
-                    </div>
-                    <div class="settings-card">
-                        <h3><i class="fas fa-shield-alt"></i> Keamanan</h3>
-                        <div class="setting-option">
-                            <div class="setting-info">
-                                <h4>Autentikasi Dua Faktor</h4>
-                                <p>Tingkatkan keamanan akun Anda</p>
-                            </div>
-                            <button class="btn-action" style="width: auto; padding: 0.5rem 1rem; background: var(--accent-primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
-                                Aktifkan
-                            </button>
-                        </div>
-                        <div class="setting-option">
-                            <div class="setting-info">
-                                <h4>Ubah Password</h4>
-                                <p>Perbarui password secara berkala</p>
-                            </div>
-                            <button class="btn-action" style="width: auto; padding: 0.5rem 1rem; background: var(--bg-tertiary); color: var(--text-primary); border: none; border-radius: 8px; cursor: pointer;">
-                                Ubah
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -1654,11 +1937,11 @@
         <div class="fab-menu">
             <div class="fab-item income" onclick="openTransactionModal('income')">
                 <i class="fas fa-arrow-down"></i>
-                <span>Pemasukan</span>
+                <span>Income</span>
             </div>
             <div class="fab-item expense" onclick="openTransactionModal('expense')">
                 <i class="fas fa-arrow-up"></i>
-                <span>Pengeluaran</span>
+                <span>Expense</span>
             </div>
             <div class="fab-item transfer" onclick="openTransferModal()">
                 <i class="fas fa-exchange-alt"></i>
@@ -1670,13 +1953,42 @@
         </button>
     </div>
 
+    <!-- Day Transactions Modal (Popup untuk kalender) -->
+    <div class="modal-overlay" id="dayTransactionsModal">
+        <div class="modal day-transactions-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-calendar-day"></i>
+                    <span id="dayModalTitle">Transactions</span>
+                </h2>
+                <button class="btn-close" onclick="closeDayTransactionsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="day-summary" id="daySummary">
+                    <!-- Summary akan diisi dinamis -->
+                </div>
+                <div class="transactions-list" id="dayTransactionsList">
+                    <!-- List transaksi akan diisi dinamis -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeDayTransactionsModal()">Close</button>
+                <button type="button" class="btn-save" onclick="openTransactionModal('expense'); closeDayTransactionsModal();">
+                    <i class="fas fa-plus"></i> Add Transaction
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Transaction Modal -->
     <div class="modal-overlay" id="transactionModal">
         <div class="modal">
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-plus-circle"></i>
-                    <span id="transactionModalTitle">Tambah Transaksi</span>
+                    <span id="transactionModalTitle">Add Transaction</span>
                 </h2>
                 <button class="btn-close" onclick="closeTransactionModal()">
                     <i class="fas fa-times"></i>
@@ -1685,16 +1997,16 @@
             <form id="transactionForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Kategori *</label>
-                        <input type="text" id="transactionCategory" placeholder="Contoh: Makan, Transport, Gaji..." required>
+                        <label>Category *</label>
+                        <input type="text" id="transactionCategory" placeholder="e.g., Food, Transport, Salary..." required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Jumlah *</label>
+                            <label>Amount *</label>
                             <input type="number" id="transactionAmount" step="0.01" placeholder="0" required>
                         </div>
                         <div class="form-group">
-                            <label>Mata Uang *</label>
+                            <label>Currency *</label>
                             <select id="transactionCurrency" required>
                                 <option value="IDR">IDR</option>
                                 <option value="USD">USD</option>
@@ -1702,30 +2014,30 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Akun *</label>
+                        <label>Account *</label>
                         <select id="transactionAccount" required>
-                            <option value="">Pilih Akun</option>
+                            <option value="">Select Account</option>
                         </select>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Tanggal *</label>
+                            <label>Date *</label>
                             <input type="date" id="transactionDate" required>
                         </div>
                         <div class="form-group">
-                            <label>Waktu</label>
+                            <label>Time</label>
                             <input type="time" id="transactionTime">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Catatan</label>
-                        <textarea id="transactionNote" rows="3" placeholder="Catatan tambahan..."></textarea>
+                        <label>Note</label>
+                        <textarea id="transactionNote" rows="3" placeholder="Additional notes..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeTransactionModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeTransactionModal()">Cancel</button>
                     <button type="submit" class="btn-save">
-                        <i class="fas fa-save"></i> Simpan
+                        <i class="fas fa-save"></i> Save
                     </button>
                 </div>
             </form>
@@ -1735,10 +2047,10 @@
     <!-- Transfer Modal -->
     <div class="modal-overlay" id="transferModal">
         <div class="modal">
-            <div class="modal-header" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
                 <h2>
                     <i class="fas fa-exchange-alt"></i>
-                    <span>Transfer Dana</span>
+                    <span>Transfer Funds</span>
                 </h2>
                 <button class="btn-close" onclick="closeTransferModal()">
                     <i class="fas fa-times"></i>
@@ -1747,24 +2059,24 @@
             <form id="transferForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Dari Akun *</label>
+                        <label>From Account *</label>
                         <select id="transferFrom" required>
-                            <option value="">Pilih Akun Asal</option>
+                            <option value="">Select Source Account</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Ke Akun *</label>
+                        <label>To Account *</label>
                         <select id="transferTo" required>
-                            <option value="">Pilih Akun Tujuan</option>
+                            <option value="">Select Destination Account</option>
                         </select>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Jumlah *</label>
+                            <label>Amount *</label>
                             <input type="number" id="transferAmount" step="0.01" placeholder="0" required>
                         </div>
                         <div class="form-group">
-                            <label>Mata Uang *</label>
+                            <label>Currency *</label>
                             <select id="transferCurrency" required>
                                 <option value="IDR">IDR</option>
                                 <option value="USD">USD</option>
@@ -1772,17 +2084,17 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Tanggal *</label>
+                        <label>Date *</label>
                         <input type="date" id="transferDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Catatan</label>
-                        <textarea id="transferNote" rows="3" placeholder="Catatan transfer..."></textarea>
+                        <label>Note</label>
+                        <textarea id="transferNote" rows="3" placeholder="Transfer note..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeTransferModal()">Batal</button>
-                    <button type="submit" class="btn-save" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                    <button type="button" class="btn-cancel" onclick="closeTransferModal()">Cancel</button>
+                    <button type="submit" class="btn-save" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
                         <i class="fas fa-exchange-alt"></i> Transfer
                     </button>
                 </div>
@@ -1796,7 +2108,7 @@
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-university"></i>
-                    <span id="accountModalTitle">Tambah Akun</span>
+                    <span id="accountModalTitle">Add Account</span>
                 </h2>
                 <button class="btn-close" onclick="closeAccountModal()">
                     <i class="fas fa-times"></i>
@@ -1805,16 +2117,16 @@
             <form id="accountForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Nama Akun *</label>
-                        <input type="text" id="accountName" placeholder="Contoh: Bank Jago, Gopay, Cash..." required>
+                        <label>Account Name *</label>
+                        <input type="text" id="accountName" placeholder="e.g., Bank Jago, Gopay, Cash..." required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Saldo Awal *</label>
+                            <label>Initial Balance *</label>
                             <input type="number" id="accountBalance" step="0.01" placeholder="0" required>
                         </div>
                         <div class="form-group">
-                            <label>Mata Uang *</label>
+                            <label>Currency *</label>
                             <select id="accountCurrency" required>
                                 <option value="IDR">IDR</option>
                                 <option value="USD">USD</option>
@@ -1822,30 +2134,30 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Tipe Akun</label>
+                        <label>Account Type</label>
                         <select id="accountType">
-                            <option value="cash">Cash / Tunai</option>
+                            <option value="cash">Cash</option>
                             <option value="bank">Bank</option>
                             <option value="ewallet">E-Wallet</option>
-                            <option value="investment">Investasi</option>
-                            <option value="other">Lainnya</option>
+                            <option value="investment">Investment</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Warna</label>
+                        <label>Color</label>
                         <div class="color-picker" id="colorPicker">
-                            <div class="color-option selected" style="background: #6d5acd;" data-color="#6d5acd"></div>
-                            <div class="color-option" style="background: #4361ee;" data-color="#4361ee"></div>
-                            <div class="color-option" style="background: #2ed573;" data-color="#2ed573"></div>
-                            <div class="color-option" style="background: #ff4757;" data-color="#ff4757"></div>
-                            <div class="color-option" style="background: #ffa502;" data-color="#ffa502"></div>
-                            <div class="color-option" style="background: #3498db;" data-color="#3498db"></div>
-                            <div class="color-option" style="background: #e74c3c;" data-color="#e74c3c"></div>
-                            <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6"></div>
+                            <div class="color-option selected" style="background: #6366f1;" data-color="#6366f1"></div>
+                            <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                            <div class="color-option" style="background: #10b981;" data-color="#10b981"></div>
+                            <div class="color-option" style="background: #ef4444;" data-color="#ef4444"></div>
+                            <div class="color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                            <div class="color-option" style="background: #06b6d4;" data-color="#06b6d4"></div>
+                            <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                            <div class="color-option" style="background: #84cc16;" data-color="#84cc16"></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Ikon</label>
+                        <label>Icon</label>
                         <div class="icon-picker" id="iconPicker">
                             <div class="icon-option selected" data-icon="wallet"><i class="fas fa-wallet"></i></div>
                             <div class="icon-option" data-icon="university"><i class="fas fa-university"></i></div>
@@ -1863,9 +2175,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeAccountModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeAccountModal()">Cancel</button>
                     <button type="submit" class="btn-save">
-                        <i class="fas fa-save"></i> Simpan
+                        <i class="fas fa-save"></i> Save
                     </button>
                 </div>
             </form>
@@ -1878,7 +2190,7 @@
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-bullseye"></i>
-                    <span id="goalModalTitle">Tambah Goal</span>
+                    <span id="goalModalTitle">Add Goal</span>
                 </h2>
                 <button class="btn-close" onclick="closeGoalModal()">
                     <i class="fas fa-times"></i>
@@ -1887,16 +2199,16 @@
             <form id="goalForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Nama Goal *</label>
-                        <input type="text" id="goalName" placeholder="Contoh: Tabungan Emergency, Beli Motor..." required>
+                        <label>Goal Name *</label>
+                        <input type="text" id="goalName" placeholder="e.g., Emergency Fund, Buy Motorcycle..." required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Target Jumlah *</label>
+                            <label>Target Amount *</label>
                             <input type="number" id="goalTarget" step="0.01" placeholder="0" required>
                         </div>
                         <div class="form-group">
-                            <label>Mata Uang *</label>
+                            <label>Currency *</label>
                             <select id="goalCurrency" required>
                                 <option value="IDR">IDR</option>
                                 <option value="USD">USD</option>
@@ -1904,22 +2216,22 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Jumlah Saat Ini</label>
+                        <label>Current Amount</label>
                         <input type="number" id="goalCurrent" step="0.01" placeholder="0" value="0">
                     </div>
                     <div class="form-group">
-                        <label>Target Tanggal</label>
+                        <label>Target Date</label>
                         <input type="date" id="goalDeadline">
                     </div>
                     <div class="form-group">
-                        <label>Catatan</label>
-                        <textarea id="goalNote" rows="3" placeholder="Catatan goal..."></textarea>
+                        <label>Note</label>
+                        <textarea id="goalNote" rows="3" placeholder="Goal note..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeGoalModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeGoalModal()">Cancel</button>
                     <button type="submit" class="btn-save">
-                        <i class="fas fa-save"></i> Simpan
+                        <i class="fas fa-save"></i> Save
                     </button>
                 </div>
             </form>
@@ -1932,7 +2244,7 @@
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-wallet"></i>
-                    <span id="goalActionTitle">Tambah Dana</span>
+                    <span id="goalActionTitle">Add Funds</span>
                 </h2>
                 <button class="btn-close" onclick="closeGoalActionModal()">
                     <i class="fas fa-times"></i>
@@ -1941,24 +2253,24 @@
             <form id="goalActionForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Jumlah *</label>
+                        <label>Amount *</label>
                         <input type="number" id="goalActionAmount" step="0.01" placeholder="0" required>
                     </div>
                     <div class="form-group">
-                        <label>Dari Akun *</label>
+                        <label>From Account *</label>
                         <select id="goalActionAccount" required>
-                            <option value="">Pilih Akun</option>
+                            <option value="">Select Account</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Catatan</label>
-                        <textarea id="goalActionNote" rows="2" placeholder="Catatan..."></textarea>
+                        <label>Note</label>
+                        <textarea id="goalActionNote" rows="2" placeholder="Note..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeGoalActionModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeGoalActionModal()">Cancel</button>
                     <button type="submit" class="btn-save" id="goalActionSubmitBtn">
-                        <i class="fas fa-save"></i> Simpan
+                        <i class="fas fa-save"></i> Save
                     </button>
                 </div>
             </form>
@@ -1981,7 +2293,7 @@
         let accounts = [];
         let transactions = [];
         let goals = [];
-        let currentCurrency = 'IDR';
+        let defaultCurrency = localStorage.getItem('defaultCurrency') || 'IDR'; // Load from localStorage
         let currentDate = new Date();
         let selectedColor = '#6d5acd';
         let selectedIcon = 'wallet';
@@ -2081,6 +2393,9 @@
         // APP INITIALIZATION
         // ==========================================
         async function initializeApp() {
+            // Set default currency from localStorage
+            document.getElementById('defaultCurrency').value = defaultCurrency;
+            
             updateUserUI(currentUser);
             
             await Promise.all([
@@ -2219,7 +2534,7 @@
             const month = currentDate.getMonth();
             
             document.getElementById('currentMonth').textContent = 
-                new Date(year, month).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                new Date(year, month).toLocaleDateString(defaultCurrency === 'IDR' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' });
             
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2228,8 +2543,10 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
-            // Day headers
-            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            // Day headers - Sesuaikan dengan locale
+            const dayNames = defaultCurrency === 'IDR' 
+                ? ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+                : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             dayNames.forEach(day => {
                 const header = document.createElement('div');
                 header.className = 'day-header';
@@ -2278,23 +2595,24 @@
                     const transDiv = document.createElement('div');
                     transDiv.className = 'day-transactions';
                     
+                    // Gunakan defaultCurrency untuk konversi
                     const income = dayTransactions
                         .filter(t => t.type === 'income')
-                        .reduce((sum, t) => sum + convertToIDR(t.amount, t.currency), 0);
+                        .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
                     const expense = dayTransactions
                         .filter(t => t.type === 'expense')
-                        .reduce((sum, t) => sum + convertToIDR(t.amount, t.currency), 0);
+                        .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
                     
                     if (income > 0) {
                         const inc = document.createElement('div');
                         inc.className = 'day-income';
-                        inc.textContent = '+' + formatCurrencyShort(income, 'IDR');
+                        inc.textContent = '+' + formatCurrencyShort(income, defaultCurrency);
                         transDiv.appendChild(inc);
                     }
                     if (expense > 0) {
                         const exp = document.createElement('div');
                         exp.className = 'day-expense';
-                        exp.textContent = '-' + formatCurrencyShort(expense, 'IDR');
+                        exp.textContent = '-' + formatCurrencyShort(expense, defaultCurrency);
                         transDiv.appendChild(exp);
                     }
                     
@@ -2313,17 +2631,97 @@
             updateSummary();
         }
 
+        // ==========================================
+        // DAY TRANSACTIONS MODAL (POPUP BARU)
+        // ==========================================
         function showDayTransactions(date) {
             const dayTrans = transactions.filter(t => t.transaction_date === date);
-            if (dayTrans.length === 0) return;
             
-            let message = `Transaksi ${date}:\n\n`;
-            dayTrans.forEach(t => {
-                const sign = t.type === 'income' ? '+' : '-';
-                message += `${sign} ${formatCurrency(t.amount, t.currency)} - ${t.category}\n`;
+            // Set title
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString(defaultCurrency === 'IDR' ? 'id-ID' : 'en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
+            document.getElementById('dayModalTitle').textContent = formattedDate;
             
-            alert(message);
+            // Calculate summary
+            const income = dayTrans
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
+            const expense = dayTrans
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
+            
+            // Render summary
+            const summaryHtml = `
+                <div class="day-summary-item income">
+                    <div class="day-summary-label">${defaultCurrency === 'IDR' ? 'Pemasukan' : 'Income'}</div>
+                    <div class="day-summary-amount">+${formatCurrency(income, defaultCurrency)}</div>
+                </div>
+                <div class="day-summary-item expense">
+                    <div class="day-summary-label">${defaultCurrency === 'IDR' ? 'Pengeluaran' : 'Expense'}</div>
+                    <div class="day-summary-amount">-${formatCurrency(expense, defaultCurrency)}</div>
+                </div>
+            `;
+            document.getElementById('daySummary').innerHTML = summaryHtml;
+            
+            // Render transactions list
+            const listContainer = document.getElementById('dayTransactionsList');
+            
+            if (dayTrans.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="no-transactions">
+                        <i class="fas fa-inbox"></i>
+                        <p>${defaultCurrency === 'IDR' ? 'Tidak ada transaksi' : 'No transactions'}</p>
+                    </div>
+                `;
+            } else {
+                listContainer.innerHTML = dayTrans.map(t => {
+                    const amount = convertToCurrency(t.amount, t.currency, defaultCurrency);
+                    const account = accounts.find(a => a.id === t.account_id);
+                    const accountName = account ? account.name : 'Unknown';
+                    
+                    let iconClass = 'expense';
+                    let icon = 'arrow-up';
+                    if (t.type === 'income') {
+                        iconClass = 'income';
+                        icon = 'arrow-down';
+                    } else if (t.type === 'transfer') {
+                        iconClass = 'transfer';
+                        icon = 'exchange-alt';
+                    }
+                    
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-icon ${iconClass}">
+                                <i class="fas fa-${icon}"></i>
+                            </div>
+                            <div class="transaction-details">
+                                <div class="transaction-category">${t.category}</div>
+                                <div class="transaction-meta">
+                                    ${accountName} • ${t.transaction_time || ''} ${t.note ? '• ' + t.note : ''}
+                                </div>
+                            </div>
+                            <div class="transaction-amount">
+                                <div class="amount ${t.type === 'income' ? 'income' : 'expense'}">
+                                    ${t.type === 'income' ? '+' : '-'}${formatCurrency(amount, defaultCurrency)}
+                                </div>
+                                <div class="currency">${defaultCurrency}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Show modal
+            document.getElementById('dayTransactionsModal').classList.add('active');
+        }
+
+        function closeDayTransactionsModal() {
+            document.getElementById('dayTransactionsModal').classList.remove('active');
         }
 
         // ==========================================
@@ -2336,8 +2734,8 @@
                 list.innerHTML = `
                     <div class="empty-accounts">
                         <i class="fas fa-university"></i>
-                        <p>Belum ada akun</p>
-                        <span class="create-first-account" onclick="openAccountModal()">Ketuk untuk membuat</span>
+                        <p>${defaultCurrency === 'IDR' ? 'Belum ada akun' : 'No accounts yet'}</p>
+                        <span class="create-first-account" onclick="openAccountModal()">${defaultCurrency === 'IDR' ? 'Ketuk untuk membuat' : 'Tap to create'}</span>
                     </div>
                 `;
             } else {
@@ -2351,8 +2749,8 @@
                             <div class="account-type">${getAccountTypeLabel(acc.type)}</div>
                         </div>
                         <div class="account-balance">
-                            <div class="amount">${formatCurrency(acc.balance, acc.currency)}</div>
-                            <div class="currency">${acc.currency}</div>
+                            <div class="amount">${formatCurrency(convertToCurrency(acc.balance, acc.currency, defaultCurrency), defaultCurrency)}</div>
+                            <div class="currency">${defaultCurrency}</div>
                         </div>
                     </div>
                 `).join('');
@@ -2365,13 +2763,13 @@
 
         function renderAccountsChart() {
             if (accounts.length === 0) {
-                document.getElementById('accountsChart').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Belum ada data</div>';
+                document.getElementById('accountsChart').innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">${defaultCurrency === 'IDR' ? 'Belum ada data' : 'No data yet'}</div>`;
                 return;
             }
             
             const data = accounts.map(acc => ({
                 x: acc.name,
-                y: convertToIDR(acc.balance, acc.currency),
+                y: convertToCurrency(acc.balance, acc.currency, defaultCurrency),
                 fillColor: acc.color
             }));
             
@@ -2394,7 +2792,7 @@
                                     show: true,
                                     label: 'Total',
                                     formatter: function(w) {
-                                        return formatCurrencyShort(w.globals.seriesTotals.reduce((a, b) => a + b, 0), 'IDR');
+                                        return formatCurrencyShort(w.globals.seriesTotals.reduce((a, b) => a + b, 0), defaultCurrency);
                                     }
                                 }
                             }
@@ -2415,14 +2813,15 @@
 
        function updateTotalBalance() {
             const total = accounts.reduce((sum, acc) => {
-            if (currentCurrency === 'IDR') {
-            return sum + convertToIDR(acc.balance, acc.currency);
-        } else {
-            return sum + convertToUSD(acc.balance, acc.currency);
+                return sum + convertToCurrency(acc.balance, acc.currency, defaultCurrency);
+            }, 0);
+            document.getElementById('totalBalance').textContent = formatCurrency(total, defaultCurrency);
+            
+            // Update currency buttons
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === defaultCurrency);
+            });
         }
-    }, 0);
-    document.getElementById('totalBalance').textContent = formatCurrency(total, currentCurrency);
-}
 
         function updateAccountSelects() {
             const selects = ['transactionAccount', 'transferFrom', 'transferTo', 'goalActionAccount'];
@@ -2431,12 +2830,13 @@
                 if (!select) return;
                 
                 const currentValue = select.value;
-                select.innerHTML = '<option value="">Pilih Akun</option>';
+                select.innerHTML = `<option value="">${defaultCurrency === 'IDR' ? 'Pilih Akun' : 'Select Account'}</option>`;
                 
                 accounts.forEach(acc => {
                     const option = document.createElement('option');
                     option.value = acc.id;
-                    option.textContent = `${acc.name} (${formatCurrency(acc.balance, acc.currency)})`;
+                    const balance = convertToCurrency(acc.balance, acc.currency, defaultCurrency);
+                    option.textContent = `${acc.name} (${formatCurrency(balance, defaultCurrency)})`;
                     select.appendChild(option);
                 });
                 
@@ -2445,11 +2845,21 @@
         }
 
         function setCurrency(curr) {
-            currentCurrency = curr;
-            document.querySelectorAll('.currency-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.textContent === curr);
-            });
-            updateTotalBalance(); // Pastikan ini dipanggil untuk update tampilan
+            defaultCurrency = curr;
+            localStorage.setItem('defaultCurrency', curr); // Save to localStorage
+            document.getElementById('defaultCurrency').value = curr; // Update settings dropdown
+            
+            // Update all displays
+            renderCalendar();
+            renderAccounts();
+            renderGoals();
+            updateSummary();
+            updateTotalBalance();
+        }
+
+        function setDefaultCurrency(curr) {
+            setCurrency(curr);
+            showNotification(`${defaultCurrency === 'IDR' ? 'Mata uang default diubah ke' : 'Default currency changed to'} ${curr}`, 'success');
         }
 
         // ==========================================
@@ -2462,8 +2872,8 @@
                 grid.innerHTML = `
                     <div class="empty-accounts" style="grid-column: 1/-1;">
                         <i class="fas fa-bullseye"></i>
-                        <h3>Belum ada goals</h3>
-                        <p>Tambahkan goal tabungan Anda</p>
+                        <h3>${defaultCurrency === 'IDR' ? 'Belum ada goals' : 'No goals yet'}</h3>
+                        <p>${defaultCurrency === 'IDR' ? 'Tambahkan goal tabungan Anda' : 'Add your savings goals'}</p>
                     </div>
                 `;
                 return;
@@ -2471,6 +2881,9 @@
             
             grid.innerHTML = goals.map(goal => {
                 const progress = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
+                const current = convertToCurrency(goal.current, goal.currency, defaultCurrency);
+                const target = convertToCurrency(goal.target, goal.currency, defaultCurrency);
+                
                 return `
                     <div class="goal-card">
                         <div class="goal-header">
@@ -2479,22 +2892,22 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
-                        <div class="goal-amount">${formatCurrency(goal.current, goal.currency)} / ${formatCurrency(goal.target, goal.currency)}</div>
+                        <div class="goal-amount">${formatCurrency(current, defaultCurrency)} / ${formatCurrency(target, defaultCurrency)}</div>
                         <div class="goal-progress">
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
                                 <span>${progress.toFixed(1)}%</span>
-                                ${goal.deadline ? `<span>Target: ${formatDate(goal.deadline)}</span>` : ''}
+                                ${goal.deadline ? `<span>${defaultCurrency === 'IDR' ? 'Target' : 'Target'}: ${formatDate(goal.deadline)}</span>` : ''}
                             </div>
                         </div>
                         <div class="goal-actions">
                             <button class="btn-action btn-add-fund" onclick="openGoalActionModal('${goal.id}', 'add')">
-                                <i class="fas fa-plus"></i> Tambah
+                                <i class="fas fa-plus"></i> ${defaultCurrency === 'IDR' ? 'Tambah' : 'Add'}
                             </button>
                             <button class="btn-action btn-withdraw" onclick="openGoalActionModal('${goal.id}', 'withdraw')">
-                                <i class="fas fa-minus"></i> Tarik
+                                <i class="fas fa-minus"></i> ${defaultCurrency === 'IDR' ? 'Tarik' : 'Withdraw'}
                             </button>
                         </div>
                     </div>
@@ -2516,30 +2929,36 @@
             
             const income = monthTransactions
                 .filter(t => t.type === 'income')
-                .reduce((sum, t) => sum + convertToIDR(t.amount, t.currency), 0);
+                .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
             
             const expense = monthTransactions
                 .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + convertToIDR(t.amount, t.currency), 0);
+                .reduce((sum, t) => sum + convertToCurrency(t.amount, t.currency, defaultCurrency), 0);
             
-            document.getElementById('monthIncome').textContent = formatCurrency(income, 'IDR');
-            document.getElementById('monthExpense').textContent = formatCurrency(expense, 'IDR');
-            document.getElementById('monthBalance').textContent = formatCurrency(income - expense, 'IDR');
+            document.getElementById('monthIncome').textContent = formatCurrency(income, defaultCurrency);
+            document.getElementById('monthExpense').textContent = formatCurrency(expense, defaultCurrency);
+            document.getElementById('monthBalance').textContent = formatCurrency(income - expense, defaultCurrency);
         }
 
-        function convertToIDR(amount, currency) {
-            if (currency === 'USD') return amount * EXCHANGE_RATE;
-            return amount;
-        }
-
-        function convertFromIDR(amount, currency) {
-            if (currency === 'USD') return amount / EXCHANGE_RATE;
-            return amount;
-        }
-
-        function convertToUSD(amount, currency) {
-            if (currency === 'IDR') return amount / EXCHANGE_RATE;
-            return amount;
+        // ==========================================
+        // CURRENCY CONVERSION FUNCTIONS
+        // ==========================================
+        
+        // Convert any amount to target currency
+        function convertToCurrency(amount, fromCurrency, toCurrency) {
+            if (fromCurrency === toCurrency) return amount;
+            
+            // Convert to IDR first
+            let inIDR = amount;
+            if (fromCurrency === 'USD') {
+                inIDR = amount * EXCHANGE_RATE;
+            }
+            
+            // Then convert to target
+            if (toCurrency === 'USD') {
+                return inIDR / EXCHANGE_RATE;
+            }
+            return inIDR;
         }
 
         function formatCurrency(amount, currency = 'IDR') {
@@ -2564,15 +2983,22 @@
         }
 
         function formatCurrencyShort(amount, currency = 'IDR') {
-            if (amount >= 1000000000) return (amount / 1000000000).toFixed(1) + 'M';
-            if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'jt';
-            if (amount >= 1000) return (amount / 1000).toFixed(1) + 'k';
-            return formatCurrency(amount, currency);
+            if (currency === 'IDR') {
+                if (amount >= 1000000000) return (amount / 1000000000).toFixed(1) + 'M';
+                if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'jt';
+                if (amount >= 1000) return (amount / 1000).toFixed(1) + 'k';
+                return formatCurrency(amount, currency);
+            } else {
+                // For USD
+                if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'M';
+                if (amount >= 1000) return (amount / 1000).toFixed(1) + 'k';
+                return formatCurrency(amount, currency);
+            }
         }
 
         function formatDate(dateStr) {
             if (!dateStr) return '-';
-            return new Date(dateStr).toLocaleDateString('id-ID', {
+            return new Date(dateStr).toLocaleDateString(defaultCurrency === 'IDR' ? 'id-ID' : 'en-US', {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric'
@@ -2580,14 +3006,25 @@
         }
 
         function getAccountTypeLabel(type) {
-            const labels = {
-                'cash': 'Cash / Tunai',
-                'bank': 'Bank',
-                'ewallet': 'E-Wallet',
-                'investment': 'Investasi',
-                'other': 'Lainnya'
-            };
-            return labels[type] || type;
+            if (defaultCurrency === 'IDR') {
+                const labels = {
+                    'cash': 'Cash / Tunai',
+                    'bank': 'Bank',
+                    'ewallet': 'E-Wallet',
+                    'investment': 'Investasi',
+                    'other': 'Lainnya'
+                };
+                return labels[type] || type;
+            } else {
+                const labels = {
+                    'cash': 'Cash',
+                    'bank': 'Bank',
+                    'ewallet': 'E-Wallet',
+                    'investment': 'Investment',
+                    'other': 'Other'
+                };
+                return labels[type] || type;
+            }
         }
 
         // ==========================================
@@ -2600,8 +3037,14 @@
         function openTransactionModal(type) {
             document.getElementById('transactionModal').classList.add('active');
             document.getElementById('transactionModalTitle').textContent = 
-                type === 'income' ? 'Tambah Pemasukan' : 'Tambah Pengeluaran';
+                type === 'income' 
+                    ? (defaultCurrency === 'IDR' ? 'Tambah Pemasukan' : 'Add Income')
+                    : (defaultCurrency === 'IDR' ? 'Tambah Pengeluaran' : 'Add Expense');
             document.getElementById('transactionForm').dataset.type = type;
+            
+            // Set default currency in modal
+            document.getElementById('transactionCurrency').value = defaultCurrency;
+            
             toggleFab();
         }
 
@@ -2612,6 +3055,7 @@
 
         function openTransferModal() {
             document.getElementById('transferModal').classList.add('active');
+            document.getElementById('transferCurrency').value = defaultCurrency;
             toggleFab();
         }
 
@@ -2622,8 +3066,9 @@
 
         function openAccountModal() {
             document.getElementById('accountModal').classList.add('active');
-            document.getElementById('accountModalTitle').textContent = 'Tambah Akun';
+            document.getElementById('accountModalTitle').textContent = defaultCurrency === 'IDR' ? 'Tambah Akun' : 'Add Account';
             document.getElementById('accountForm').reset();
+            document.getElementById('accountCurrency').value = defaultCurrency;
             selectedColor = '#6d5acd';
             selectedIcon = 'wallet';
             document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
@@ -2638,8 +3083,9 @@
 
         function openGoalModal() {
             document.getElementById('goalModal').classList.add('active');
-            document.getElementById('goalModalTitle').textContent = 'Tambah Goal';
+            document.getElementById('goalModalTitle').textContent = defaultCurrency === 'IDR' ? 'Tambah Goal' : 'Add Goal';
             document.getElementById('goalForm').reset();
+            document.getElementById('goalCurrency').value = defaultCurrency;
         }
 
         function closeGoalModal() {
@@ -2650,7 +3096,9 @@
             currentGoalId = goalId;
             currentGoalAction = action;
             document.getElementById('goalActionModal').classList.add('active');
-            document.getElementById('goalActionTitle').textContent = action === 'add' ? 'Tambah Dana' : 'Tarik Dana';
+            document.getElementById('goalActionTitle').textContent = action === 'add' 
+                ? (defaultCurrency === 'IDR' ? 'Tambah Dana' : 'Add Funds')
+                : (defaultCurrency === 'IDR' ? 'Tarik Dana' : 'Withdraw Funds');
             document.getElementById('goalActionSubmitBtn').style.background = 
                 action === 'add' ? 'var(--success)' : 'var(--danger)';
         }
@@ -2690,12 +3138,12 @@
                 const account = accounts.find(a => a.id === data.account_id);
                 if (account) {
                     let newBalance = account.balance;
+                    const amountInAccountCurrency = convertToCurrency(data.amount, data.currency, account.currency);
+                    
                     if (type === 'income') {
-                        newBalance += data.currency === account.currency ? data.amount : 
-                                     data.currency === 'USD' ? data.amount * EXCHANGE_RATE : data.amount / EXCHANGE_RATE;
+                        newBalance += amountInAccountCurrency;
                     } else {
-                        newBalance -= data.currency === account.currency ? data.amount :
-                                      data.currency === 'USD' ? data.amount * EXCHANGE_RATE : data.amount / EXCHANGE_RATE;
+                        newBalance -= amountInAccountCurrency;
                     }
                     
                     await supabaseClient.from('accounts').update({ balance: newBalance }).eq('id', account.id);
@@ -2707,13 +3155,13 @@
                 renderAccounts();
                 updateSummary();
                 closeTransactionModal();
-                showNotification('Transaksi berhasil ditambahkan!', 'success');
+                showNotification(defaultCurrency === 'IDR' ? 'Transaksi berhasil ditambahkan!' : 'Transaction added successfully!', 'success');
                 
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                btn.innerHTML = `<i class="fas fa-save"></i> ${defaultCurrency === 'IDR' ? 'Simpan' : 'Save'}`;
             }
         }
 
@@ -2732,7 +3180,7 @@
                 const note = document.getElementById('transferNote').value;
                 
                 if (fromId === toId) {
-                    throw new Error('Akun asal dan tujuan tidak boleh sama');
+                    throw new Error(defaultCurrency === 'IDR' ? 'Akun asal dan tujuan tidak boleh sama' : 'Source and destination accounts cannot be the same');
                 }
                 
                 const fromAcc = accounts.find(a => a.id === fromId);
@@ -2758,10 +3206,8 @@
                 let fromBalance = fromAcc.balance;
                 let toBalance = toAcc.balance;
                 
-                const amountInFromCurrency = currency === fromAcc.currency ? amount :
-                    currency === 'USD' ? amount * EXCHANGE_RATE : amount / EXCHANGE_RATE;
-                const amountInToCurrency = currency === toAcc.currency ? amount :
-                    currency === 'USD' ? amount * EXCHANGE_RATE : amount / EXCHANGE_RATE;
+                const amountInFromCurrency = convertToCurrency(amount, currency, fromAcc.currency);
+                const amountInToCurrency = convertToCurrency(amount, currency, toAcc.currency);
                 
                 fromBalance -= amountInFromCurrency;
                 toBalance += amountInToCurrency;
@@ -2774,7 +3220,7 @@
                 renderCalendar();
                 renderAccounts();
                 closeTransferModal();
-                showNotification('Transfer berhasil!', 'success');
+                showNotification(defaultCurrency === 'IDR' ? 'Transfer berhasil!' : 'Transfer successful!', 'success');
                 
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
@@ -2807,13 +3253,13 @@
                 await loadAccounts();
                 renderAccounts();
                 closeAccountModal();
-                showNotification('Akun berhasil ditambahkan!', 'success');
+                showNotification(defaultCurrency === 'IDR' ? 'Akun berhasil ditambahkan!' : 'Account added successfully!', 'success');
                 
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                btn.innerHTML = `<i class="fas fa-save"></i> ${defaultCurrency === 'IDR' ? 'Simpan' : 'Save'}`;
             }
         }
 
@@ -2840,13 +3286,13 @@
                 await loadGoals();
                 renderGoals();
                 closeGoalModal();
-                showNotification('Goal berhasil ditambahkan!', 'success');
+                showNotification(defaultCurrency === 'IDR' ? 'Goal berhasil ditambahkan!' : 'Goal added successfully!', 'success');
                 
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                btn.innerHTML = `<i class="fas fa-save"></i> ${defaultCurrency === 'IDR' ? 'Simpan' : 'Save'}`;
             }
         }
 
@@ -2867,15 +3313,15 @@
                 let newGoalCurrent = goal.current;
                 let newAccountBalance = account.balance;
                 
-                const amountInGoalCurrency = goal.currency === account.currency ? amount :
-                    goal.currency === 'USD' ? amount / EXCHANGE_RATE : amount * EXCHANGE_RATE;
+                const amountInGoalCurrency = convertToCurrency(amount, account.currency, goal.currency);
+                const amountInAccountCurrency = amount;
                 
                 if (currentGoalAction === 'add') {
                     newGoalCurrent += amountInGoalCurrency;
-                    newAccountBalance -= amount;
+                    newAccountBalance -= amountInAccountCurrency;
                 } else {
                     newGoalCurrent -= amountInGoalCurrency;
-                    newAccountBalance += amount;
+                    newAccountBalance += amountInAccountCurrency;
                 }
                 
                 // Update goal
@@ -2888,7 +3334,7 @@
                 const transData = {
                     user_id: currentUser.id,
                     type: currentGoalAction === 'add' ? 'expense' : 'income',
-                    category: `Goal: ${goal.name} (${currentGoalAction === 'add' ? 'Tambah' : 'Tarik'})`,
+                    category: `Goal: ${goal.name} (${currentGoalAction === 'add' ? (defaultCurrency === 'IDR' ? 'Tambah' : 'Add') : (defaultCurrency === 'IDR' ? 'Tarik' : 'Withdraw')})`,
                     amount: amount,
                     currency: account.currency,
                     account_id: accountId,
@@ -2904,18 +3350,23 @@
                 renderCalendar();
                 updateSummary();
                 closeGoalActionModal();
-                showNotification(`Dana berhasil ${currentGoalAction === 'add' ? 'ditambahkan' : 'ditarik'}!`, 'success');
+                showNotification(
+                    defaultCurrency === 'IDR' 
+                        ? `Dana berhasil ${currentGoalAction === 'add' ? 'ditambahkan' : 'ditarik'}!`
+                        : `Funds successfully ${currentGoalAction === 'add' ? 'added' : 'withdrawn'}!`,
+                    'success'
+                );
                 
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                btn.innerHTML = `<i class="fas fa-save"></i> ${defaultCurrency === 'IDR' ? 'Simpan' : 'Save'}`;
             }
         }
 
         async function deleteGoal(id) {
-            if (!confirm('Hapus goal ini?')) return;
+            if (!confirm(defaultCurrency === 'IDR' ? 'Hapus goal ini?' : 'Delete this goal?')) return;
             
             try {
                 const { error } = await supabaseClient.from('goals').delete().eq('id', id);
@@ -2923,7 +3374,7 @@
                 
                 await loadGoals();
                 renderGoals();
-                showNotification('Goal dihapus', 'success');
+                showNotification(defaultCurrency === 'IDR' ? 'Goal dihapus' : 'Goal deleted', 'success');
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
             }
