@@ -1146,6 +1146,14 @@
             padding: 0.5rem;
         }
 
+        /* Helper text untuk input */
+        .form-group small {
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
         .modal-footer {
             padding: 1.5rem 2rem;
             background: var(--glass-bg);
@@ -2316,9 +2324,11 @@
                                 <option value="1:10">1:10</option>
                             </select>
                         </div>
+                        <!-- PERBAIKAN: Input P&L dengan support desimal -->
                         <div class="form-group">
                             <label for="pnl" data-i18n="pnl">P&L (USD) *</label>
-                            <input type="number" id="pnl" name="pnl" step="0.01" placeholder="Profit/Loss" required>
+                            <input type="number" id="pnl" name="pnl" step="0.01" min="-999999" max="999999" placeholder="0.00" required>
+                            <small>Contoh: 0.30, 1.50, 10.00, 100.00 (desimal diperbolehkan)</small>
                         </div>
                         <div class="form-group">
                             <label for="image_before" data-i18n="imageBefore">Image Before</label>
@@ -3950,6 +3960,9 @@ function closeTradeModal() {
     currentEditId = null;
 }
 
+// ==========================================
+// PERBAIKAN: SAVE TRADE dengan support desimal P&L
+// ==========================================
 async function saveTrade(event) {
     event.preventDefault();
     
@@ -3963,15 +3976,30 @@ async function saveTrade(event) {
     try {
         const formData = new FormData(event.target);
         const result = formData.get('result');
+        
+        // PERBAIKAN: Ambil nilai P&L sebagai float dengan presisi desimal
         let pnl = parseFloat(formData.get('pnl')) || 0;
         
-        if (result === 'WIN') {
-            if (pnl < 0) pnl = Math.abs(pnl);
-        } else if (result === 'LOSS') {
-            if (pnl > 0) pnl = -Math.abs(pnl);
-        } else if (result === 'BREAKEVEN') {
+        // PERBAIKAN: Logic yang lebih baik untuk handling P&L
+        if (result === 'BREAKEVEN') {
+            // Jika BREAKEVEN, force ke 0
             pnl = 0;
+        } else if (result === 'WIN') {
+            // WIN harus positif, tapi tetap pertahankan nilai desimal
+            if (pnl < 0) {
+                pnl = Math.abs(pnl);
+            }
+            // Jika sudah positif (termasuk desimal seperti 0.30), biarkan apa adanya
+        } else if (result === 'LOSS') {
+            // LOSS harus negatif, tapi tetap pertahankan nilai desimal
+            if (pnl > 0) {
+                pnl = -Math.abs(pnl);
+            }
+            // Jika sudah negatif (termasuk desimal seperti -0.30), biarkan apa adanya
         }
+        
+        // Debug log untuk memastikan nilai desimal tersimpan
+        console.log('Saving P&L:', pnl, 'Type:', typeof pnl);
         
         const tradeData = {
             user_id: currentUser.id,
@@ -3982,7 +4010,7 @@ async function saveTrade(event) {
             side: formData.get('side'),
             time_frame: formData.get('time_frame') || null,
             risk_reward: formData.get('risk_reward') || null,
-            pnl: pnl,
+            pnl: pnl,  // Nilai desimal seperti 0.30 akan tersimpan dengan benar
             image_before: formData.get('image_before') || null,
             image_after: formData.get('image_after') || null,
             note: formData.get('note') || null
@@ -4009,8 +4037,8 @@ async function saveTrade(event) {
                 
             if (error) throw error;
             
+            // Insert ke array lokal
             tradesData.unshift(data[0]);
-            showNotification(translations[currentLanguage].addTrade + ' ' + (currentLanguage === 'en' ? 'added!' : 'ditambahkan!'), 'success');
         }
 
         closeTradeModal();
@@ -4041,7 +4069,11 @@ async function editTrade(id) {
     document.getElementById('side').value = trade.side || '';
     document.getElementById('time_frame').value = trade.time_frame || '';
     document.getElementById('risk_reward').value = trade.risk_reward || '';
-    document.getElementById('pnl').value = trade.pnl || '';
+    
+    // PERBAIKAN: Set nilai P&L dengan format yang benar (termasuk desimal)
+    const pnlValue = trade.pnl !== null && trade.pnl !== undefined ? parseFloat(trade.pnl) : '';
+    document.getElementById('pnl').value = pnlValue;
+    
     document.getElementById('image_before').value = trade.image_before || '';
     document.getElementById('image_after').value = trade.image_after || '';
     document.getElementById('note').value = trade.note || '';
@@ -4131,23 +4163,33 @@ function updateChartsTheme() {
 }
 
 // ==========================================
-// UTILITY FUNCTIONS
+// PERBAIKAN: UTILITY FUNCTIONS untuk format currency dengan desimal
 // ==========================================
 function formatCurrency(value) {
     if (value === null || value === undefined) return '-';
     const num = parseFloat(value);
+    
+    // PERBAIKAN: Tentukan jumlah desimal berdasarkan nilai
+    // Jika nilai memiliki desimal, tampilkan 2 desimal
+    // Jika nilai bulat, tampilkan tanpa desimal kecuali nilai kecil (< 10)
+    const hasDecimal = num % 1 !== 0;
+    const fractionDigits = hasDecimal ? 2 : (Math.abs(num) < 10 ? 2 : 0);
+    
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: 2  // Selalu izinkan sampai 2 desimal
     }).format(num);
 }
 
 function formatCurrencyShort(value) {
     const num = parseFloat(value);
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-    return num.toFixed(0);
+    if (Math.abs(num) >= 1000) return (num / 1000).toFixed(1) + 'k';
+    // PERBAIKAN: Untuk nilai kecil dengan desimal, tampilkan 2 desimal
+    if (Math.abs(num) < 1 && num !== 0) return num.toFixed(2); // 0.30 tetap 0.30
+    if (Math.abs(num) < 10 && num % 1 !== 0) return num.toFixed(2); // 1.50 tetap 1.50
+    return num.toFixed(num % 1 === 0 ? 0 : 1); // 10.5 jadi 10.5, 10 jadi 10
 }
 
 function formatDate(dateString) {

@@ -87,7 +87,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            z-index: 99999;
             transition: opacity 0.5s;
         }
 
@@ -218,6 +218,8 @@
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Header - Modern Glassmorphism */
@@ -232,6 +234,8 @@
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 50;
         }
 
         .header-left {
@@ -329,6 +333,7 @@
         /* Profile - Modern */
         .profile {
             position: relative;
+            z-index: 1000;
         }
 
         .profile-trigger {
@@ -384,13 +389,13 @@
             width: 280px;
             background: var(--card-bg);
             border-radius: 16px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
             border: 1px solid var(--glass-border);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 99999 !important;
             backdrop-filter: blur(20px);
             overflow: hidden;
         }
@@ -453,7 +458,7 @@
             gap: 0.8rem;
             cursor: pointer;
             transition: all var(--transition-speed);
-            color: #fffbfb
+            color: var(--text-secondary);
         }
 
         .dropdown-menu li:hover {
@@ -858,6 +863,7 @@
             transition: all 0.2s;
             cursor: pointer;
             border: 1px solid transparent;
+            position: relative;
         }
 
         .account-item:hover {
@@ -905,6 +911,32 @@
         .account-balance .currency {
             font-size: 0.8rem;
             color: var(--text-secondary);
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn-account-action {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-account-action:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            transform: scale(1.1);
         }
 
         .add-account-btn {
@@ -1195,7 +1227,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -1575,7 +1607,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 9999;
+            z-index: 99999;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -1688,6 +1720,36 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+
+        /* Delete Confirmation Modal */
+        .delete-confirm-modal {
+            max-width: 400px;
+        }
+
+        .delete-confirm-modal .modal-header {
+            background: var(--danger);
+        }
+
+        .delete-warning {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .delete-warning i {
+            font-size: 3rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+
+        .delete-warning p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .delete-warning strong {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -1751,7 +1813,7 @@
                         <span class="active">Budget</span>
                     </div>
                     <div class="profile">
-                        <div class="profile-trigger" onclick="toggleProfile()">
+                        <div class="profile-trigger" onclick="toggleProfile(event)">
                             <div class="profile-avatar" id="headerAvatar">BM</div>
                             <div class="profile-info">
                                 <span class="profile-name" id="headerName">User</span>
@@ -2122,8 +2184,8 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Initial Balance *</label>
-                            <input type="number" id="accountBalance" step="0.01" placeholder="0" required>
+                            <label>Initial Balance</label>
+                            <input type="number" id="accountBalance" step="0.01" placeholder="0 (optional)">
                         </div>
                         <div class="form-group">
                             <label>Currency *</label>
@@ -2181,6 +2243,35 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal-overlay" id="deleteAccountModal">
+        <div class="modal delete-confirm-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Delete Account</span>
+                </h2>
+                <button class="btn-close" onclick="closeDeleteAccountModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <i class="fas fa-trash-alt"></i>
+                    <p>Are you sure you want to delete this account?</p>
+                    <strong id="deleteAccountName">Account Name</strong>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">All transactions associated with this account will also be deleted. This action cannot be undone.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeDeleteAccountModal()">Cancel</button>
+                <button type="button" class="btn-save" style="background: var(--danger);" onclick="confirmDeleteAccount()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2295,12 +2386,13 @@
         let goals = [];
         let defaultCurrency = localStorage.getItem('defaultCurrency') || 'IDR'; // Load from localStorage
         let currentDate = new Date();
-        let selectedColor = '#6d5acd';
+        let selectedColor = '#6366f1';
         let selectedIcon = 'wallet';
         let currentGoalId = null;
         let currentGoalAction = 'add'; // 'add' or 'withdraw'
         let charts = {};
         let supabaseClient = null;
+        let accountToDelete = null;
 
         // ==========================================
         // INITIALIZATION
@@ -2319,6 +2411,7 @@
                     currentUser = session.user;
                     await initializeApp();
                 } else {
+                    // FIX #1: Redirect to index.html if not logged in
                     window.location.href = 'index.html';
                 }
                 
@@ -2334,8 +2427,8 @@
                 
             } catch (error) {
                 console.error('Initialization error:', error);
-                showNotification('Error initializing app: ' + error.message, 'error');
-                document.getElementById('loading-screen').style.display = 'none';
+                // FIX #1: Redirect to index.html on error
+                window.location.href = 'index.html';
             }
             
             setupEventListeners();
@@ -2740,7 +2833,7 @@
                 `;
             } else {
                 list.innerHTML = accounts.map(acc => `
-                    <div class="account-item" onclick="editAccount('${acc.id}')">
+                    <div class="account-item">
                         <div class="account-icon" style="background: ${acc.color};">
                             <i class="fas fa-${acc.icon}"></i>
                         </div>
@@ -2751,6 +2844,11 @@
                         <div class="account-balance">
                             <div class="amount">${formatCurrency(convertToCurrency(acc.balance, acc.currency, defaultCurrency), defaultCurrency)}</div>
                             <div class="currency">${defaultCurrency}</div>
+                        </div>
+                        <div class="account-actions">
+                            <button class="btn-account-action" onclick="deleteAccount('${acc.id}')" title="Delete Account">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 `).join('');
@@ -2860,6 +2958,61 @@
         function setDefaultCurrency(curr) {
             setCurrency(curr);
             showNotification(`${defaultCurrency === 'IDR' ? 'Mata uang default diubah ke' : 'Default currency changed to'} ${curr}`, 'success');
+        }
+
+        // ==========================================
+        // DELETE ACCOUNT FUNCTIONS
+        // ==========================================
+        function deleteAccount(accountId) {
+            const account = accounts.find(a => a.id === accountId);
+            if (!account) return;
+            
+            accountToDelete = accountId;
+            document.getElementById('deleteAccountName').textContent = account.name;
+            document.getElementById('deleteAccountModal').classList.add('active');
+        }
+
+        function closeDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.remove('active');
+            accountToDelete = null;
+        }
+
+        async function confirmDeleteAccount() {
+            if (!accountToDelete) return;
+            
+            try {
+                // Delete all transactions associated with this account first
+                const { error: transError } = await supabaseClient
+                    .from('transactions')
+                    .delete()
+                    .eq('account_id', accountToDelete);
+                
+                if (transError) throw transError;
+                
+                // Delete the account
+                const { error: accError } = await supabaseClient
+                    .from('accounts')
+                    .delete()
+                    .eq('id', accountToDelete);
+                
+                if (accError) throw accError;
+                
+                // Remove from local array
+                accounts = accounts.filter(a => a.id !== accountToDelete);
+                
+                // Refresh UI
+                renderAccounts();
+                renderCalendar();
+                updateSummary();
+                
+                showNotification(defaultCurrency === 'IDR' ? 'Akun berhasil dihapus' : 'Account deleted successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showNotification('Error: ' + error.message, 'error');
+            } finally {
+                closeDeleteAccountModal();
+            }
         }
 
         // ==========================================
@@ -3069,10 +3222,10 @@
             document.getElementById('accountModalTitle').textContent = defaultCurrency === 'IDR' ? 'Tambah Akun' : 'Add Account';
             document.getElementById('accountForm').reset();
             document.getElementById('accountCurrency').value = defaultCurrency;
-            selectedColor = '#6d5acd';
+            selectedColor = '#6366f1';
             selectedIcon = 'wallet';
             document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-            document.querySelector('[data-color="#6d5acd"]').classList.add('selected');
+            document.querySelector('[data-color="#6366f1"]').classList.add('selected');
             document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
             document.querySelector('[data-icon="wallet"]').classList.add('selected');
         }
@@ -3237,10 +3390,14 @@
             btn.innerHTML = '<div class="spinner"></div>';
             
             try {
+                // FIX #2: Initial Balance is optional, default to 0 if empty
+                const balanceInput = document.getElementById('accountBalance').value;
+                const initialBalance = balanceInput ? parseFloat(balanceInput) : 0;
+                
                 const data = {
                     user_id: currentUser.id,
                     name: document.getElementById('accountName').value,
-                    balance: parseFloat(document.getElementById('accountBalance').value),
+                    balance: initialBalance,
                     currency: document.getElementById('accountCurrency').value,
                     type: document.getElementById('accountType').value,
                     color: selectedColor,
@@ -3384,6 +3541,9 @@
         // NAVIGATION & UI
         // ==========================================
         function switchSection(section, contentId) {
+            // FIX #3: Close profile dropdown when switching sections
+            document.getElementById('profileDropdown').classList.remove('active');
+            
             document.querySelectorAll('.content-section').forEach(content => {
                 content.classList.remove('active');
             });
@@ -3396,11 +3556,21 @@
                 }
             });
 
-            document.getElementById('profileDropdown').classList.remove('active');
+            // Re-render charts if accounts section is active
+            if (section === 'accounts' && charts.accounts) {
+                setTimeout(() => {
+                    charts.accounts.render();
+                }, 100);
+            }
         }
 
-        function toggleProfile() {
-            document.getElementById('profileDropdown').classList.toggle('active');
+        // FIX #3: Improved toggleProfile function with event handling
+        function toggleProfile(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('active');
         }
 
         function toggleTheme() {
