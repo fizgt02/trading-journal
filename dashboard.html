@@ -4036,9 +4036,6 @@ async function saveTrade(event) {
                 .select();
                 
             if (error) throw error;
-            
-            // Insert ke array lokal
-            tradesData.unshift(data[0]);
         }
 
         closeTradeModal();
@@ -4271,4 +4268,5 @@ async function logout() {
 }
     </script>
 </body>
+
 </html>
